@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>駐車場を探す</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}"></script>
+  <script src="{{ url_for('static', filename='main.js') }}" defer></script>
+</head>
+<body>
+    {% block content %}{% endblock %}
+</body>
+</html>

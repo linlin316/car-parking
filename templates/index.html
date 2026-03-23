@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="chat-container">
+  <div id="chatBody"></div>
+
+  <div id="mapArea" style="display:none; height:300px;"></div>
+
+  <div class="input-area">
+    <input type="text" id="chatInput" placeholder="メッセージを入力...">
+    <button id="chatSend">送信</button>
+    <button id="chatReset">リセット</button>
+  </div>
+</div>
+{% endblock %}
