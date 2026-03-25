@@ -2,6 +2,9 @@ import os
 import requests
 
 
+EXCLUDE_WORDS = ["月極", "契約", "専用", "関係者"]
+
+
 # 場所名を緯度・経度に変換する
 def get_location(location):
     api_key = os.environ["GOOGLE_MAPS_API_KEY"]
@@ -56,6 +59,9 @@ def  search_parking(location, radius=500):
 
     parkings = []
     for place in results:
+        name = place.get("name", "")
+        if any(word in name for word in EXCLUDE_WORDS):
+                continue
         parkings.append({
             "name": place.get("name", "名称不明"),
             "address": place.get("vicinity", "住所不明"),

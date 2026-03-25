@@ -44,6 +44,10 @@ def handle_chat(user_text):
     if location and result.get("ready_to_search"):
         parkings = search_parking(location)
         result["parkings"] = parkings
+        session["search_state"] = {
+            "location": location,
+            "parkings": parkings
+        }
 
     return result
 
@@ -51,4 +55,5 @@ def handle_chat(user_text):
 @bp.route("/reset", methods=["POST"])
 def reset():
     session["history"] = []
+    session["search_state"] = {}
     return jsonify({"status": "ok"}), 200
