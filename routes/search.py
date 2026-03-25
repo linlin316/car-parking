@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.maps_service import search_parking
+from services.maps_service import search_parking, search_parking_by_latlng
 
 
 bp = Blueprint("search", __name__)
@@ -21,3 +21,16 @@ def handle_search(location):
     # 駐車場を検索する
     result = search_parking(location)
     return {"parkings": result, "location": location}
+
+
+@bp.route("/search_by_location", methods=["POST"])
+def search_by_location():
+    data = request.get_json(silent=True) or {}
+    lat = data.get("lat")
+    lng = data.get("lng")
+
+    if not lat or not lng:
+        return jsonify({"parkings": []}), 200
+
+    parkings = search_parking_by_latlng(lat, lng)
+    return jsonify({"parkings": parkings}), 200

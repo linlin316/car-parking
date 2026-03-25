@@ -44,9 +44,11 @@ def handle_chat(user_text):
     if location and result.get("ready_to_search"):
         parkings = search_parking(location)
         result["parkings"] = parkings
+        if len(parkings) == 0:
+            result["message"] = "条件に合う駐車場が見つかりませんでした。別の場所名でもう一度お試しください。"
         session["search_state"] = {
-            "location": location,
-            "parkings": parkings
+            "location": location,  # 最後に検索した場所
+            "parkings": parkings   # 最後の検索結果
         }
 
     return result

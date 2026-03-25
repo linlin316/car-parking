@@ -1,6 +1,7 @@
 import os
 import anthropic
 import json
+import re
 
 
 def text_to_ai(messages):
@@ -31,8 +32,11 @@ def text_to_ai(messages):
     result_text = response.content[0].text
     print(f"[AI RAW] {result_text}")
 
-    # ```json と ``` を削除する
-    clean_text = result_text.strip().removeprefix("```json").removesuffix("```").strip()
+    match = re.search(r"\{.*\}", result_text, re.DOTALL)
+    if match:
+        clean_text = match.group()
+    else:
+        clean_text = "{}"
 
     # JSONとして解析できるか確認
     try:

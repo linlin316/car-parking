@@ -29,7 +29,7 @@ document.getElementById("chatSend").addEventListener("click", function() {
 });
 
 
-
+// リセットボタン
 document.getElementById("chatReset").addEventListener("click", function() {
     fetch("/reset", {
     method: "POST",
@@ -39,6 +39,7 @@ document.getElementById("chatReset").addEventListener("click", function() {
     .then(data => {
         document.getElementById("chatBody").innerHTML = "";  // チャットを消す
         document.getElementById("mapArea").style.display = "none";  // 地図を隠す
+        markers.forEach(m => m.setMap(null));
         markers = [];
         map = null;
     });
@@ -146,3 +147,26 @@ function showMap(parkings){
         }
     });
 }
+
+
+// GPS処理
+document.getElementById("gpsSearch").addEventListener("click", function() {
+    navigator.geolocation.getCurrentPosition(function(position) {
+        // GPSを取得する機能
+        const lat = position.coords.latitude;   // 緯度
+        const lng = position.coords.longitude;  // 経度
+
+        // サーバーに緯度・経度を送る
+        fetch("/search_by_location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ lat: lat, lng: lng })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.parkings && data.parkings.length > 0) {
+                showParkings(data.parkings);
+            }
+        });
+    });
+});

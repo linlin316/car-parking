@@ -54,6 +54,22 @@ body {
 }
 
 
+/* 入力行 */
+.input-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+
+/* ボタン行 */
+.button-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+
 /* メッセージ表示エリア */
 #chatBody {
     flex: 1;
@@ -83,6 +99,18 @@ body {
   border: none;
   cursor: pointer;
   font-weight: 700;
+}
+
+
+/* 現在地ボタン */
+#gpsSearch {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background-color: #34A853;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
 }
 
 
