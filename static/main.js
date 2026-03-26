@@ -216,7 +216,7 @@ document.getElementById("gpsSearch").addEventListener("click", function() {
                 }, 1500);
             }
             else {
-                addMessage("現在地周辺の駐車場が見つけません。", "ai")
+                addMessage("現在地周辺の駐車場が見つかりません", "ai")
             };
         })
         .catch(() => {
