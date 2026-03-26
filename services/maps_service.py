@@ -34,16 +34,9 @@ def get_location(location):
     return f"{result['lat']},{result['lng']}"
 
 
-# 駐車場を探す
-def  search_parking(location):
+# Places API呼び出し・フィルタリング・結果整形(共用)
+def search_by_latlng(latlng):
     api_key = os.environ["GOOGLE_MAPS_API_KEY"]
-
-    # 場所名を緯度・経度に変換
-    latlng = get_location(location)
-
-    # 場所が見つからない場合
-    if not latlng:
-        return []
 
     # Places APIで駐車場を検索
     url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
@@ -82,43 +75,19 @@ def  search_parking(location):
     return parkings
 
 
-# 現在地からGPS処理
+# 駐車場を探す
+def search_parking(location):
+    # 場所名を緯度・経度に変換
+    latlng = get_location(location)
+
+    # 場所が見つからない場合
+    if not latlng:
+        return []
+    return search_by_latlng(latlng)
+
+
+# GPS処理
 def search_parking_by_latlng(lat, lng):
-    api_key = os.environ["GOOGLE_MAPS_API_KEY"]
-
+    # 現在の緯度・経度もらう
     latlng = f"{lat},{lng}"
-
-    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
-
-    params = {
-        "location": latlng,
-        "keyword": "駐車場",
-        "language": "ja",
-        "key": api_key,
-        "rankby": "distance",
-    }
-    try:
-        response = requests.get(url, params=params, timeout=5)
-        response.raise_for_status()
-        data = response.json()
-    except Exception as e:
-         print(f"[MAP ERROR] {e}")
-         return []
-
-    results = data.get("results", [])
-    results = results[:10]
-
-    parkings = []
-    for place in results:
-        name = place.get("name", "")
-        if any(word in name for word in EXCLUDE_WORDS):
-                continue
-        parkings.append({
-            "name": place.get("name", "名称不明"),
-            "address": place.get("vicinity", "住所不明"),
-            "place_id": place.get("place_id", ""),
-            "lat": place.get("geometry", {}).get("location", {}).get("lat"),
-            "lng": place.get("geometry", {}).get("location", {}).get("lng"),
-        })
-    
-    return parkings
+    return search_by_latlng(latlng)

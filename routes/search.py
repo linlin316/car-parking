@@ -29,7 +29,7 @@ def search_by_location():
     lat = data.get("lat")
     lng = data.get("lng")
 
-    if not lat or not lng:
+    if lat is None or lng is None:
         return jsonify({"parkings": []}), 200
 
     parkings = search_parking_by_latlng(lat, lng)

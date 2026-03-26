@@ -24,7 +24,7 @@ def text_to_ai(messages):
            例：「名古屋」→「名古屋のどのあたりですか？駅名や目的地を教えてください」
         3. locationが確定したらready_to_search: trueにして検索する
 
-        {"location": "場所名またはnull", "ready_to_search": true or false, "radius_meters": 500, "message": "ユーザーへの自然な日本語の返信"}
+        {"location": "場所名またはnull", "ready_to_search": true or false, "message": "ユーザーへの自然な日本語の返信"}
         """,
         messages=messages
     )
@@ -44,7 +44,7 @@ def text_to_ai(messages):
     except Exception:
         # 失敗したらフォールバック
         return {
-            "location": "",
-            "radius_meters": 500,
+            "location": None,
+            "ready_to_search": False,
             "message": "条件を読み取れませんでした。もう一度入力してください。"
         }

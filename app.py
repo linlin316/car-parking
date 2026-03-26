@@ -18,4 +18,4 @@ def index():
     return render_template("index.html", google_maps_key=os.environ["GOOGLE_MAPS_API_KEY"])
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")

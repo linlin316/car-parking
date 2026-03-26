@@ -33,7 +33,7 @@ def handle_chat(user_text):
     # AIの返答を履歴に追加する
     history.append({"role": "assistant", "content": result.get("message", "")})
 
-    # 直近5往復だけ保持する
+    #  直近10メッセージだけ保持する
     history = history[-10:]
 
     # セッションに保存する
@@ -46,11 +46,10 @@ def handle_chat(user_text):
         result["parkings"] = parkings
         if len(parkings) == 0:
             result["message"] = "条件に合う駐車場が見つかりませんでした。別の場所名でもう一度お試しください。"
-        session["search_state"] = {
-            "location": location,  # 最後に検索した場所
-            "parkings": parkings   # 最後の検索結果
-        }
 
+        session["search_state"] = {
+            "location": location  # 最後に検索した場所
+        }
     return result
 
 

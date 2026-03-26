@@ -24,8 +24,6 @@ body {
 #chatReset {
     padding: 10px 12px;
     border-radius: 10px;
-    background-color: #e0e0e0;
-    color: #333;
     border: none;
     cursor: pointer;
     font-weight: 700;
@@ -94,8 +92,6 @@ body {
 #chatSend {
   padding: 10px 12px;
   border-radius: 10px;
-  background-color: #534AB7;
-  color: white;
   border: none;
   cursor: pointer;
   font-weight: 700;
@@ -106,8 +102,6 @@ body {
 #gpsSearch {
     padding: 10px 12px;
     border-radius: 10px;
-    background-color: #34A853;
-    color: white;
     border: none;
     cursor: pointer;
     font-weight: 700;
@@ -120,6 +114,7 @@ body {
     padding: 8px;
     gap: 8px;
     border-top: 1px solid #ccc;
+    flex-direction: column;
 }
 
 
