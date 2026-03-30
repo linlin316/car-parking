@@ -39,14 +39,15 @@ body {
 }
 
 
-/* チャットアプリ全体の外枠 (スマホ画面風のサイズ) */
+/* チャットアプリ全体の外枠 (スマホのサイズ) */
 .chat-container {
-    width: 390px;
-    height: 844px;
+    width: 100%;
+    max-width: 390px;
+    height: 100dvh;
+    border-radius: 0;
     display: flex;
     flex-direction: column;
     background-color: white;
-    border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
