@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from services.ai_service  import text_to_ai
-from services.maps_service import search_parking
+from services.maps_service import search_parking, get_facility_info
 
 
 bp = Blueprint("chat", __name__)
@@ -41,15 +41,16 @@ def handle_chat(user_text):
 
     # 場所があれば駐車場を検索する
     location = result.get("location")
+    intent = result.get("intent")
     if location and result.get("ready_to_search"):
-        parkings = search_parking(location)
-        result["parkings"] = parkings
-        if len(parkings) == 0:
-            result["message"] = "条件に合う駐車場が見つかりませんでした。別の場所名でもう一度お試しください。"
-
-        session["search_state"] = {
-            "location": location  # 最後に検索した場所
-        }
+        if intent == "facility":
+            facility = get_facility_info(location)
+            result["facility"] = facility
+        else:
+            parkings = search_parking(location)
+            result["parkings"] = parkings
+            if len(parkings) == 0:
+                result["message"] = "条件に合う駐車場が見つかりませんでした。別の場所名でもう一度お試しください。"
     return result
 
 
@@ -58,3 +59,16 @@ def reset():
     session["history"] = []
     session["search_state"] = {}
     return jsonify({"status": "ok"}), 200
+
+
+# 施設
+@bp.route("/facility", methods=["POST"])
+def facility():
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    
+    if not name:
+        return jsonify({"facility": None}), 200
+    
+    facility = get_facility_info(name)
+    return jsonify({"facility": facility}), 200

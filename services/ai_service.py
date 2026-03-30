@@ -15,16 +15,19 @@ def text_to_ai(messages):
         max_tokens=300,
         temperature=0.1,
         system="""
-        あなたは駐車場検索アシスタントです。
+        あなたは駐車場・施設検索アシスタントです。
         以下のJSON形式のみで返答せよ。他の文章は一切含めるな。
+
+        intentの種類：
+        - "facility": 施設の駐車場を調べたい場合（例：「東京大学に駐車したい」「〇〇病院に車で行きたい」）
+        - "parking": 場所周辺の駐車場を探したい場合（例：「渋谷駅の近くに駐車したい」）
 
         会話のステップ：
         1. locationが不明な場合は場所を聞く
         2. locationが市・区レベルで曖昧な場合はもっと具体的に聞く
-           例：「名古屋」→「名古屋のどのあたりですか？駅名や目的地を教えてください」
         3. locationが確定したらready_to_search: trueにして検索する
 
-        {"location": "場所名またはnull", "ready_to_search": true or false, "message": "ユーザーへの自然な日本語の返信"}
+        {"intent": "facility or parking", "location": "場所名またはnull", "ready_to_search": true or false, "message": "ユーザーへの自然な日本語の返信"}
         """,
         messages=messages
     )
@@ -32,7 +35,7 @@ def text_to_ai(messages):
     result_text = response.content[0].text
     print(f"[AI RAW] {result_text}")
 
-    match = re.search(r"\{.*\}", result_text, re.DOTALL)
+    match = re.search(r"\{[^{}]*\}", result_text, re.DOTALL)
     if match:
         clean_text = match.group()
     else:

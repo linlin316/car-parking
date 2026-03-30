@@ -9,8 +9,14 @@ document.getElementById("chatSend").addEventListener("click", function() {
     if (!message.trim()) return;
     document.getElementById("chatInput").value = "";
 
-    addMessage(message, "user");
+    // 送信前にフロントをリセット
+    document.getElementById("chatBody").innerHTML = "";
+    document.getElementById("mapArea").style.display = "none";
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    map = null;
 
+    addMessage(message, "user");
     btn.disabled = true;   
     
     // サーバーにメッセージを送信する
@@ -25,8 +31,13 @@ document.getElementById("chatSend").addEventListener("click", function() {
         // AIの返信を画面に表示する
         addMessage(data.message, "ai");
 
-        // 駐車場リストがあれば表示する(1.5秒後)
-        if (data.parkings && data.parkings.length > 0) {
+        // 施設情報を表示する、駐車場があれば表示する(1.5秒後)
+        if (data.facility) {
+            setTimeout(() => {
+                showFacility(data.facility);
+            }, 1500);
+        }
+        else if (data.parkings && data.parkings.length > 0) {
             setTimeout(() => {
                 showParkings(data.parkings)
             }, 1500);
@@ -37,6 +48,14 @@ document.getElementById("chatSend").addEventListener("click", function() {
         addMessage("通信エラーが発生しました。", "ai");
         btn.disabled = false;
     });
+});
+
+
+// Enterキーが押されたら送信する
+document.getElementById("chatInput").addEventListener("keydown", function(e) {
+    if (e.key === "Enter"){
+        document.getElementById("chatSend").click();
+    }
 });
 
 
@@ -70,6 +89,121 @@ function addMessage(text, sender) {
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
+
+// 施設情報
+function showFacility(facility) {
+    saveHistory(facility);
+
+    const chatBody = document.getElementById("chatBody");
+
+    const div = document.createElement("div");
+    div.className = "facility-card";
+
+    const name = document.createElement("strong");
+    name.textContent = facility.name;
+
+    const address = document.createElement("p");
+    address.textContent = facility.address;
+
+    const parking = document.createElement("p");
+    parking.textContent = "駐車場：公式HPでご確認ください";
+
+    div.appendChild(name);
+    div.appendChild(address);
+    div.appendChild(parking);
+
+    // HPがあれば表示
+    if (facility.website) {
+        const link = document.createElement("a");
+        link.href = facility.website;
+        link.target = "_blank";
+        link.textContent = "公式HPを見る";
+        div.appendChild(link);
+    }
+
+    chatBody.appendChild(div);
+
+    // 「近くの駐車場を探しますか？」ボタン
+    const btn = document.createElement("button");
+    btn.textContent = "近くの駐車場を探す";
+    btn.className = "nearby-btn";
+    btn.addEventListener("click", () => {
+        btn.disabled = true;
+        addMessage("近くの駐車場を探します。", "ai");
+
+        // facilityの座標を使って駐車場を検索する
+        fetch("/search_by_location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ lat: facility.lat, lng: facility.lng }),
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.parkings && data.parkings.length > 0) {
+                setTimeout(() => {
+                    showParkings(data.parkings);
+                }, 1500);
+            } else {
+                addMessage("近くの駐車場が見つかりませんでした。", "ai");
+            }
+        })
+        .catch(() => {
+            addMessage("通信エラーが発生しました。", "ai");
+        });
+    });
+    div.appendChild(btn);
+    
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+
+// 履歴に保存する
+function saveHistory(facility) {
+    const history = JSON.parse(localStorage.getItem("facilityHistory") || "[]");
+    
+    // 重複チェック（同じ施設は保存しない）
+    if (!history.find(h => h.place_id === facility.place_id)) {
+        history.unshift(facility);  // 先頭に追加
+        history.splice(10);         // 最大10件まで
+        localStorage.setItem("facilityHistory", JSON.stringify(history));
+        renderHistory();
+    }
+}
+
+
+// 履歴を表示する
+function renderHistory() {
+    const history = JSON.parse(localStorage.getItem("facilityHistory") || "[]");
+    const historyArea = document.getElementById("historyArea");
+    historyArea.innerHTML = "";
+
+    history.forEach((facility, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "history-item";
+
+        const btn = document.createElement("button");
+        btn.textContent = facility.name;
+        btn.className = "history-btn";
+        btn.addEventListener("click", () => {
+            showFacility(facility);
+        });
+
+        // 削除用×ボタン
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "x";
+        deleteBtn.className = "history-delete-btn";
+        deleteBtn.addEventListener("click", (e) => {
+            e.stopPropagation();  // 施設検索が動かないようにする
+            history.splice(index, 1);
+            localStorage.setItem("facilityHistory", JSON.stringify(history));
+            renderHistory();
+        });
+
+        wrapper.appendChild(btn);
+        wrapper.appendChild(deleteBtn);
+        historyArea.appendChild(wrapper);
+    });
+}
 
 
 function showParkings(parkings){
@@ -260,4 +394,74 @@ recognition.onend = function(){
     if (text.trim()) {
         document.getElementById("chatSend").click();
     }
+}
+
+
+// ページ読み込み時に履歴を表示する
+renderHistory();
+
+
+// 施設名 Places APIのAutocomplete
+const autocompleteService = new google.maps.places.AutocompleteService();
+
+document.getElementById("facilityInput").addEventListener("input", function() {
+    const input = this.value;
+    
+    // 2文字以上入力されたら候補を取得
+    if (input.length < 2) {
+        document.getElementById("autocompleteList").innerHTML = "";
+        return;
+    }
+
+    autocompleteService.getPlacePredictions(
+        { input: input, language: "ja" },
+        function(predictions, status) {
+            const list = document.getElementById("autocompleteList");
+            list.innerHTML = "";
+
+            if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) return;
+
+            predictions.forEach(prediction => {
+                const item = document.createElement("div");
+                item.className = "autocomplete-item";
+                item.textContent = prediction.description;
+                item.addEventListener("click", () => {
+                    document.getElementById("facilityInput").value = prediction.description;
+                    list.innerHTML = "";
+                    // 選んだら施設検索する
+                    searchFacilityByName(prediction.description);
+                });
+                list.appendChild(item);
+            });
+        }
+    );
+});
+
+
+// 施設名で施設情報を検索する
+function searchFacilityByName(name) {
+    document.getElementById("chatBody").innerHTML = "";
+    document.getElementById("mapArea").style.display = "none";
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    map = null;
+
+    addMessage(name + "を検索中...", "ai");
+
+    fetch("/facility", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.facility) {
+            showFacility(data.facility);
+        } else {
+            addMessage("施設情報が見つかりませんでした。", "ai");
+        }
+    })
+    .catch(() => {
+        addMessage("通信エラーが発生しました。", "ai");
+    });
 }
