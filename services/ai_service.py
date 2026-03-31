@@ -47,6 +47,7 @@ def text_to_ai(messages):
     except Exception:
         # 失敗したらフォールバック
         return {
+            "intent": None,
             "location": None,
             "ready_to_search": False,
             "message": "条件を読み取れませんでした。もう一度入力してください。"

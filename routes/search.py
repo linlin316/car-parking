@@ -26,10 +26,10 @@ def handle_search(location):
 @bp.route("/search_by_location", methods=["POST"])
 def search_by_location():
     data = request.get_json(silent=True) or {}
-    lat = data.get("lat")
-    lng = data.get("lng")
-
-    if lat is None or lng is None:
+    try:
+        lat = float(data.get("lat"))
+        lng = float(data.get("lng"))
+    except (TypeError, ValueError):
         return jsonify({"parkings": []}), 200
 
     parkings = search_parking_by_latlng(lat, lng)

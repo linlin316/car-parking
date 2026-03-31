@@ -42,7 +42,7 @@ def handle_chat(user_text):
     # 場所があれば駐車場を検索する
     location = result.get("location")
     intent = result.get("intent")
-    if location and result.get("ready_to_search"):
+    if location and result.get("ready_to_search") and intent:
         if intent == "facility":
             facility = get_facility_info(location)
             result["facility"] = facility
