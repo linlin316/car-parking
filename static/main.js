@@ -134,13 +134,17 @@ function showFacility(facility) {
     div.appendChild(address);
     div.appendChild(parking);
 
-    // HPがあれば表示
+    // HPがあれば表示、なければメッセージを表示
     if (facility.website) {
         const link = document.createElement("a");
         link.href = facility.website;
         link.target = "_blank";
         link.textContent = "公式HPを見る";
         div.appendChild(link);
+    } else {
+        const noHp = document.createElement("p");
+        noHp.textContent = "公式HPは見つかりませんでした。";
+        div.appendChild(noHp);
     }
 
     chatBody.appendChild(div);
