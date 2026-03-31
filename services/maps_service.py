@@ -1,8 +1,12 @@
+# Google Maps API（Geocoding・Places）を呼び出す
+
 import os
 import requests
 
 
+# 検索結果から除外するキーワード（月極・専用駐車場など）
 EXCLUDE_WORDS = ["月極", "契約", "専用", "関係者", "予約制", "管理用", "従業員", "業者専用", "搬入用", "身障者"]
+
 
 
 # 場所名を緯度・経度に変換する
@@ -32,6 +36,7 @@ def get_location(location):
     result = data["results"][0]["geometry"]["location"]
 
     return f"{result['lat']},{result['lng']}"
+
 
 
 # Places API呼び出し・フィルタリング・結果整形(共用)
@@ -75,6 +80,7 @@ def search_by_latlng(latlng):
     return parkings
 
 
+
 # 駐車場を探す
 def search_parking(location):
     latlng = get_location(location)
@@ -91,6 +97,7 @@ def get_facility_info(facility_name):
     if not latlng:
         return None
     return search_facility(latlng, facility_name)
+
 
 
 # Places APIで施設情報取得
@@ -143,6 +150,7 @@ def search_facility(latlng, facility_name):
     }
 
 
+
 #Place Details APIを呼んで、HPと駐車場の有無を返す
 def get_place_details(place_id):
     api_key = os.environ["GOOGLE_MAPS_API_KEY"]
@@ -170,6 +178,7 @@ def get_place_details(place_id):
         "website": result.get("website"),
         "has_parking": "確認できません",
     }
+
 
 
 # GPS処理

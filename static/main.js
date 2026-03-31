@@ -1,3 +1,24 @@
+// ===== 変数宣言 =====
+// 地図関連
+let map = null;
+let markers = [];
+let activeInfoWindow = null;
+
+
+// 施設検索関連
+let autocompleteService = null;
+
+
+// 音声入力関連
+let isRecording = false;  // 録音中かどうか
+const recognition = new webkitSpeechRecognition();
+recognition.lang = "ja-JP";        // 日本語
+recognition.continuous = false;    // 一回で止まる
+
+
+
+// ===== チャット(下) =====
+// 送信ボタンのクリック処理
 document.getElementById("chatSend").addEventListener("click", function() {
     
     const message = document.getElementById("chatInput").value;
@@ -66,7 +87,7 @@ document.getElementById("chatReset").addEventListener("click", function() {
     })
     .then(res => res.json())
     .then(data => {
-        document.getElementById("chatBody").innerHTML = "";         // チャットを消す
+        document.getElementById("chatBody").innerHTML = "";
         document.getElementById("mapArea").style.display = "none";  // 地図を隠す
         markers.forEach(m => m.setMap(null));                       // 地図からピンを消す
         markers = [];                                               // 配列を空にする
@@ -78,9 +99,8 @@ document.getElementById("chatReset").addEventListener("click", function() {
 });
 
 
-
+// メッセージをチャット画面に追加する
 function addMessage(text, sender) {
-    // メッセージをチャット画面に追加する
     const chatBody = document.getElementById("chatBody");
     const div = document.createElement("div");
     div.className = sender === "user" ? "bubble-user" : "bubble-ai";
@@ -90,6 +110,8 @@ function addMessage(text, sender) {
 }
 
 
+
+// ===== 施設関連 =====
 // 施設情報
 function showFacility(facility) {
     saveHistory(facility);
@@ -157,55 +179,73 @@ function showFacility(facility) {
 }
 
 
-// 履歴に保存する
-function saveHistory(facility) {
-    const history = JSON.parse(localStorage.getItem("facilityHistory") || "[]");
-    
-    // 重複チェック（同じ施設は保存しない）
-    if (!history.find(h => h.place_id === facility.place_id)) {
-        history.unshift(facility);  // 先頭に追加
-        history.splice(10);         // 最大10件まで
-        localStorage.setItem("facilityHistory", JSON.stringify(history));
-        renderHistory();
-    }
-}
+// 施設名で施設情報を検索する
+function searchFacilityByName(name) {
+    document.getElementById("chatBody").innerHTML = "";
+    document.getElementById("mapArea").style.display = "none";
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    map = null;
 
+    addMessage(name + "を検索中...", "ai");
 
-// 履歴を表示する
-function renderHistory() {
-    const history = JSON.parse(localStorage.getItem("facilityHistory") || "[]");
-    const historyArea = document.getElementById("historyArea");
-    historyArea.innerHTML = "";
-
-    history.forEach((facility, index) => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "history-item";
-
-        const btn = document.createElement("button");
-        btn.textContent = facility.name;
-        btn.className = "history-btn";
-        btn.addEventListener("click", () => {
-            showFacility(facility);
-        });
-
-        // 削除用×ボタン
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "x";
-        deleteBtn.className = "history-delete-btn";
-        deleteBtn.addEventListener("click", (e) => {
-            e.stopPropagation();  // 施設検索が動かないようにする
-            history.splice(index, 1);
-            localStorage.setItem("facilityHistory", JSON.stringify(history));
-            renderHistory();
-        });
-
-        wrapper.appendChild(btn);
-        wrapper.appendChild(deleteBtn);
-        historyArea.appendChild(wrapper);
+    fetch("/facility", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.facility) {
+            showFacility(data.facility);
+        } else {
+            addMessage("施設情報が見つかりませんでした。", "ai");
+        }
+    })
+    .catch(() => {
+        addMessage("通信エラーが発生しました。", "ai");
     });
 }
 
 
+// 施設候補リストを取得
+document.getElementById("facilityInput").addEventListener("input", function() {
+    const input = this.value;
+    
+    // 2文字以上入力されたら候補を取得
+    if (input.length < 2) {
+        document.getElementById("autocompleteList").innerHTML = "";
+        return;
+    }
+
+    autocompleteService.getPlacePredictions(
+        { input: input, language: "ja" },
+        function(predictions, status) {
+            const list = document.getElementById("autocompleteList");
+            list.innerHTML = "";
+
+            if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) return;
+
+            predictions.forEach(prediction => {
+                const item = document.createElement("div");
+                item.className = "autocomplete-item";
+                item.textContent = prediction.description;
+                item.addEventListener("click", () => {
+                    document.getElementById("facilityInput").value = prediction.description;
+                    list.innerHTML = "";
+                    // 選んだら施設検索する
+                    searchFacilityByName(prediction.description);
+                });
+                list.appendChild(item);
+            });
+        }
+    );
+});
+
+
+
+// ===== 駐車場関連 =====
+// 駐車場のリストカードを画面に表示する
 function showParkings(parkings){
     // 2回目の検索、古いカードが消えてから新しいカード表示する
     document.querySelectorAll(".parking-card").forEach(c => c.remove());
@@ -255,11 +295,7 @@ function showParkings(parkings){
 }
 
 
-let map = null;
-let markers = [];
-let activeInfoWindow = null;
-
-
+// 駐車場の地図とピンを表示する
 function showMap(parkings){
     // 最初にリセットする
     markers.forEach(m => m.setMap(null));
@@ -327,7 +363,60 @@ function showMap(parkings){
 }
 
 
-// GPS処理
+
+// ===== 履歴関連 =====
+// 履歴に保存する
+function saveHistory(facility) {
+    const history = JSON.parse(localStorage.getItem("facilityHistory") || "[]");
+    
+    // 重複チェック（同じ施設は保存しない）
+    if (!history.find(h => h.place_id === facility.place_id)) {
+        history.unshift(facility);  // 先頭に追加
+        history.splice(10);         // 最大10件まで
+        localStorage.setItem("facilityHistory", JSON.stringify(history));
+        renderHistory();
+    }
+}
+
+
+// 履歴を表示する
+function renderHistory() {
+    const history = JSON.parse(localStorage.getItem("facilityHistory") || "[]");
+    const historyArea = document.getElementById("historyArea");
+    historyArea.innerHTML = "";
+
+    history.forEach((facility, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "history-item";
+
+        const btn = document.createElement("button");
+        btn.textContent = facility.name;
+        btn.className = "history-btn";
+        btn.addEventListener("click", () => {
+            showFacility(facility);
+        });
+
+        // 削除用×ボタン
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "x";
+        deleteBtn.className = "history-delete-btn";
+        deleteBtn.addEventListener("click", (e) => {
+            e.stopPropagation();  // 施設検索が動かないようにする
+            history.splice(index, 1);
+            localStorage.setItem("facilityHistory", JSON.stringify(history));
+            renderHistory();
+        });
+
+        wrapper.appendChild(btn);
+        wrapper.appendChild(deleteBtn);
+        historyArea.appendChild(wrapper);
+    });
+}
+
+
+
+// ===== GPS処理 =====
+// 現在地周辺の駐車場を検索する
 document.getElementById("gpsSearch").addEventListener("click", function() {
     navigator.geolocation.getCurrentPosition(
         function(position) {
@@ -365,16 +454,13 @@ document.getElementById("gpsSearch").addEventListener("click", function() {
 
 
 
-let isRecording = false;  // 録音中かどうか
-const recognition = new webkitSpeechRecognition();
-recognition.lang = "ja-JP";        // 日本語
-recognition.continuous = false;    // 一回で止まる
-
+// ===== 音声入力 =====
+//認識結果をもらう
 recognition.onresult = function(event){
-    //認識結果をもらう
     const text = event.results[0][0].transcript;
     document.getElementById("chatInput").value = text;
 }
+
 
 // マイクボタンを押したら録音開始、もう一度押したら停止して送信
 document.getElementById("micBtn").addEventListener("click", function() {
@@ -397,71 +483,9 @@ recognition.onend = function(){
 }
 
 
-// ページ読み込み時に履歴を表示する
-renderHistory();
 
-
-// 施設名 Places APIのAutocomplete
-const autocompleteService = new google.maps.places.AutocompleteService();
-
-document.getElementById("facilityInput").addEventListener("input", function() {
-    const input = this.value;
-    
-    // 2文字以上入力されたら候補を取得
-    if (input.length < 2) {
-        document.getElementById("autocompleteList").innerHTML = "";
-        return;
-    }
-
-    autocompleteService.getPlacePredictions(
-        { input: input, language: "ja" },
-        function(predictions, status) {
-            const list = document.getElementById("autocompleteList");
-            list.innerHTML = "";
-
-            if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) return;
-
-            predictions.forEach(prediction => {
-                const item = document.createElement("div");
-                item.className = "autocomplete-item";
-                item.textContent = prediction.description;
-                item.addEventListener("click", () => {
-                    document.getElementById("facilityInput").value = prediction.description;
-                    list.innerHTML = "";
-                    // 選んだら施設検索する
-                    searchFacilityByName(prediction.description);
-                });
-                list.appendChild(item);
-            });
-        }
-    );
-});
-
-
-// 施設名で施設情報を検索する
-function searchFacilityByName(name) {
-    document.getElementById("chatBody").innerHTML = "";
-    document.getElementById("mapArea").style.display = "none";
-    markers.forEach(m => m.setMap(null));
-    markers = [];
-    map = null;
-
-    addMessage(name + "を検索中...", "ai");
-
-    fetch("/facility", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name }),
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.facility) {
-            showFacility(data.facility);
-        } else {
-            addMessage("施設情報が見つかりませんでした。", "ai");
-        }
-    })
-    .catch(() => {
-        addMessage("通信エラーが発生しました。", "ai");
-    });
+// ===== 初期化 =====
+function initApp() {
+    autocompleteService = new google.maps.places.AutocompleteService();
+    renderHistory();
 }

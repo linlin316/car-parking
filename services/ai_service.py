@@ -1,9 +1,12 @@
+#  Claude APIを呼び出して意図・場所を解析する
+
 import os
 import anthropic
 import json
 import re
 
 
+# claude api 会話
 def text_to_ai(messages):
     # messagesは会話履歴のリスト
 
@@ -35,6 +38,7 @@ def text_to_ai(messages):
     result_text = response.content[0].text
     print(f"[AI RAW] {result_text}")
 
+    # AIの返答からJSONを抽出する（{}の中身を取り出す）
     match = re.search(r"\{[^{}]*\}", result_text, re.DOTALL)
     if match:
         clean_text = match.group()

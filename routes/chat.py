@@ -1,3 +1,5 @@
+# チャット送受信・セッション管理・施設検索エンドポイント
+
 from flask import Blueprint, request, jsonify, session
 from services.ai_service  import text_to_ai
 from services.maps_service import search_parking, get_facility_info
@@ -6,6 +8,7 @@ from services.maps_service import search_parking, get_facility_info
 bp = Blueprint("chat", __name__)
 
 
+# チャットエンドポイント
 @bp.route("/chat", methods=["POST"])
 def chat():
     # ユーザーメッセージもらう
@@ -20,14 +23,14 @@ def chat():
     return jsonify(result), 200
 
 
+
+# チャットの処理（AI呼び出し・履歴管理・検索）
 def handle_chat(user_text):
-    # セッションから会話履歴を取得する
     history = session.get("history", [])
 
     # ユーザーのメッセージを履歴に追加する
     history.append({"role": "user", "content": user_text})
 
-    # AIに会話履歴を渡す
     result = text_to_ai(history)
 
     # AIの返答を履歴に追加する
@@ -54,6 +57,8 @@ def handle_chat(user_text):
     return result
 
 
+
+# リセットエンドポイント（会話履歴・検索状態をクリア）
 @bp.route("/reset", methods=["POST"])
 def reset():
     session["history"] = []
@@ -61,7 +66,8 @@ def reset():
     return jsonify({"status": "ok"}), 200
 
 
-# 施設
+
+# 施設検索エンドポイント
 @bp.route("/facility", methods=["POST"])
 def facility():
     data = request.get_json(silent=True) or {}
