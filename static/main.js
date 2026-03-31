@@ -222,6 +222,9 @@ document.getElementById("facilityInput").addEventListener("input", function() {
         return;
     }
 
+    // autocompleteServiceが初期化されていない場合は何もしない
+    if(!autocompleteService) return;
+
     autocompleteService.getPlacePredictions(
         { input: input, language: "ja" },
         function(predictions, status) {
@@ -493,3 +496,5 @@ function initApp() {
     autocompleteService = new google.maps.places.AutocompleteService();
     renderHistory();
 }
+
+initApp();

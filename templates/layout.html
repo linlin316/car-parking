@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>駐車場を探す</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=places&language=ja&loading=async&callback=initApp"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=places&language=ja" defer></script>
   <script src="{{ url_for('static', filename='main.js') }}" defer></script>
 </head>
 <body>
