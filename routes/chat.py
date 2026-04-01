@@ -15,6 +15,9 @@ def chat():
     data = request.get_json(silent=True) or {}
     user_text = (data.get("message") or "").strip()
 
+    if not user_text:
+        return jsonify({"message": "メッセージを入力してください。"}), 200
+
     # メッセージを処理する
     result = handle_chat(user_text)
 

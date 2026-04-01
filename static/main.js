@@ -8,9 +8,17 @@ let activeInfoWindow = null;
 // 施設検索関連
 let autocompleteService = null;
 
+let debounceTimer = null;    // タイマーのIDを保存する変数
+//「ひ」を入力 → タイマー開始（ID: 1）→ debounceTimer = 1
+//「が」を入力 → タイマー1をキャンセル → 新しいタイマー開始（ID: 2）→ debounceTimer = 2
+//「し」を入力 → タイマー2をキャンセル → 新しいタイマー開始（ID: 3）→ debounceTimer = 3
+// 300ms後 → タイマー3が実行 → APIを1回だけ呼ぶ
+
+
 
 // 音声入力関連
 let isRecording = false;
+
 
 // ブラウザが音声入力に対応しているか確認する
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -120,6 +128,7 @@ function addMessage(text, sender) {
 // ===== 施設関連 =====
 // 施設情報
 function showFacility(facility) {
+    document.getElementById("chatBody").innerHTML = "";
     saveHistory(facility);
 
     const chatBody = document.getElementById("chatBody");
@@ -191,6 +200,8 @@ function showFacility(facility) {
 
 // 施設名で施設情報を検索する
 function searchFacilityByName(name) {
+    document.getElementById("facilityInput").value = "";
+    document.getElementById("autocompleteList").innerHTML = "";
     document.getElementById("chatBody").innerHTML = "";
     document.getElementById("mapArea").style.display = "none";
     markers.forEach(m => m.setMap(null));
@@ -231,28 +242,32 @@ document.getElementById("facilityInput").addEventListener("input", function() {
     // autocompleteServiceが初期化されていない場合は何もしない
     if(!autocompleteService) return;
 
-    autocompleteService.getPlacePredictions(
-        { input: input, language: "ja" },
-        function(predictions, status) {
-            const list = document.getElementById("autocompleteList");
-            list.innerHTML = "";
+    // 前のタイマーをキャンセルして、300ms後に実行する
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        autocompleteService.getPlacePredictions(
+            { input: input, language: "ja" },
+            function(predictions, status) {
+                const list = document.getElementById("autocompleteList");
+                list.innerHTML = "";
 
-            if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) return;
+                if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) return;
 
-            predictions.forEach(prediction => {
-                const item = document.createElement("div");
-                item.className = "autocomplete-item";
-                item.textContent = prediction.description;
-                item.addEventListener("click", () => {
-                    document.getElementById("facilityInput").value = prediction.description;
-                    list.innerHTML = "";
-                    // 選んだら施設検索する
-                    searchFacilityByName(prediction.description);
+                predictions.forEach(prediction => {
+                    const item = document.createElement("div");
+                    item.className = "autocomplete-item";
+                    item.textContent = prediction.description;
+                    item.addEventListener("click", () => {
+                        document.getElementById("facilityInput").value = prediction.description;
+                        list.innerHTML = "";
+                        // 選んだら施設検索する
+                        searchFacilityByName(prediction.description);
+                    });
+                    list.appendChild(item);
                 });
-                list.appendChild(item);
-            });
-        }
-    );
+            }
+        );
+    }, 300);
 });
 
 
