@@ -93,6 +93,7 @@ document.getElementById("chatReset").addEventListener("click", function() {
     .then(res => res.json())
     .then(data => {
         document.getElementById("chatBody").innerHTML = "";
+        showWelcome();
         document.getElementById("mapArea").style.display = "none";  // 地図を隠す
         markers.forEach(m => m.setMap(null));                       // 地図からピンを消す
         markers = [];                                               // 配列を空にする
@@ -499,9 +500,21 @@ if (recognition) {
 }
 
 
-// ===== 初期化 =====
+// ===== 初期化関連 =====
+// 最初の挨拶文
+function showWelcome() {
+    const chatBody = document.getElementById("chatBody");
+    const div = document.createElement("div");
+    div.className = "welcome-message";
+    div.textContent = "今日どこに行きたいですか？";
+    chatBody.appendChild(div);
+}
+
+
+// 初期化
 function initApp() {
     autocompleteService = new google.maps.places.AutocompleteService();
+    showWelcome();
     renderHistory();
 }
 
