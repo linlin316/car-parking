@@ -36,15 +36,6 @@ def handle_chat(user_text):
 
     result = text_to_ai(history)
 
-    # AIの返答を履歴に追加する
-    history.append({"role": "assistant", "content": result.get("message", "")})
-
-    #  直近10メッセージだけ保持する
-    history = history[-10:]
-
-    # セッションに保存する
-    session["history"] = history
-
     # 場所があれば駐車場を検索する
     location = result.get("location")
     intent = result.get("intent")
@@ -52,11 +43,33 @@ def handle_chat(user_text):
         if intent == "facility":
             facility = get_facility_info(location)
             result["facility"] = facility
+            # 施設が見つかったときも履歴に追加する
+            history.append({"role": "assistant", "content": result.get("message", "")})
         else:
             parkings = search_parking(location)
             result["parkings"] = parkings
-            if len(parkings) == 0:
+            if parkings:
+                # 駐車場名のリストを文字列にして履歴に追加する
+                parking_names = "、".join([p["name"] for p in parkings])
+                history.append({
+                    "role": "assistant",
+                    "content": result.get("message", "") + f"。見つかった駐車場：{parking_names}"
+                })
+
+            else:
                 result["message"] = "条件に合う駐車場が見つかりませんでした。別の場所名でもう一度お試しください。"
+                history.append({"role": "assistant", "content": result.get("message", "")})
+
+    else:
+        # 検索しないときも履歴に追加する
+        history.append({"role": "assistant", "content": result.get("message", "")})
+
+    #  直近10メッセージだけ保持する
+    history = history[-10:]
+
+    # セッションに保存する
+    session["history"] = history
+
     return result
 
 
