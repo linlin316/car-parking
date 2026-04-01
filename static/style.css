@@ -87,9 +87,10 @@ body {
 
 
 /* ===== ボタン ===== */
-/*  送信、リセット、現在地ボタン */
+/*  送信、リセット、音声入力、現在地ボタン */
 #chatSend,
 #chatReset,
+#micBtn,
 #gpsSearch {
   padding: 10px 12px;
   border-radius: 10px;
