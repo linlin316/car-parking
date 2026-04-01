@@ -438,6 +438,11 @@ document.getElementById("gpsSearch").addEventListener("click", function() {
         const lng = position.coords.longitude;  // 経度
 
         // サーバーに緯度・経度を送る
+        document.getElementById("chatBody").innerHTML = "";
+        document.getElementById("mapArea").style.display = "none";
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+        map = null;
         addMessage("現在地周辺の駐車場を検索中...", "ai")
         fetch("/search_by_location", {
             method: "POST",
