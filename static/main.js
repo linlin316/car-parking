@@ -10,11 +10,16 @@ let autocompleteService = null;
 
 
 // 音声入力関連
-let isRecording = false;  // 録音中かどうか
-const recognition = new webkitSpeechRecognition();
-recognition.lang = "ja-JP";        // 日本語
-recognition.continuous = false;    // 一回で止まる
+let isRecording = false;
 
+// ブラウザが音声入力に対応しているか確認する
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+if(recognition) {
+    recognition.lang = "ja-JP";        // 日本語
+    recognition.continuous = false;    // 一回で止まる
+}
 
 
 // ===== チャット(下) =====
@@ -462,33 +467,36 @@ document.getElementById("gpsSearch").addEventListener("click", function() {
 
 
 // ===== 音声入力 =====
-//認識結果をもらう
-recognition.onresult = function(event){
-    const text = event.results[0][0].transcript;
-    document.getElementById("chatInput").value = text;
+if (recognition) {
+    //認識結果をもらう
+    recognition.onresult = function(event){
+        const text = event.results[0][0].transcript;
+        document.getElementById("chatInput").value = text;
+    };
+
+    // 録音が終わった時自動送信
+    recognition.onend = function(){
+        isRecording = false;
+        const text = document.getElementById("chatInput").value;
+        if (text.trim()) {
+            document.getElementById("chatSend").click();
+        }
+    };
+
+    // マイクボタンの処理
+    document.getElementById("micBtn").addEventListener("click", function() {
+        if (isRecording){
+            recognition.stop();
+            isRecording = false;
+        } else {
+            recognition.start();
+            isRecording = true;
+        }
+    });
+} else {
+    // 非対応ブラウザではマイクボタンを隠す
+    document.getElementById("micBtn").style.display = "none";
 }
-
-
-// マイクボタンを押したら録音開始、もう一度押したら停止して送信
-document.getElementById("micBtn").addEventListener("click", function() {
-    if (isRecording) {
-        recognition.stop();
-        isRecording = false; 
-    } else {
-        recognition.start();
-        isRecording = true;
-    }
-});
-
-// 録音が終わった時自動送信
-recognition.onend = function(){
-    isRecording = false;
-    const text = document.getElementById("chatInput").value;
-    if (text.trim()) {
-        document.getElementById("chatSend").click();
-    }
-}
-
 
 
 // ===== 初期化 =====
