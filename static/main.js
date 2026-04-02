@@ -252,6 +252,12 @@ document.getElementById("facilityInput").addEventListener("input", function() {
                 list.innerHTML = "";
 
                 if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) return;
+                // 駐車場っぽい名前（「駐車場」「パーキング」「パーク」を含む）を候補から除外する
+                predictions = predictions.filter(p =>
+                    !p.description.includes("駐車場") &&
+                    !p.description.includes("パーキング") &&
+                    !p.description.includes("パーク")
+                );
 
                 predictions.forEach(prediction => {
                     const item = document.createElement("div");
