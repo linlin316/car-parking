@@ -9,6 +9,7 @@ EXCLUDE_WORDS = ["月極", "契約", "専用", "関係者", "予約制", "管理
 
 
 
+# ===== Geocoding API =====
 # 場所名を緯度・経度に変換する
 def get_location(location):
     api_key = os.environ["GOOGLE_MAPS_API_KEY"]
@@ -25,9 +26,9 @@ def get_location(location):
         response = requests.get(url, params=params, timeout=5)
         response.raise_for_status()
         data = response.json()
-    except Exception as e:
-         print(f"[MAP ERROR] {e}")
-         return None
+    except requests.exceptions.RequestException as e:
+        print(f"[MAP ERROR] {e}")
+        return None
 
     # 場所が見つからない場合
     if not data.get("results"):
@@ -35,47 +36,69 @@ def get_location(location):
 
     result = data["results"][0]["geometry"]["location"]
 
-    return f"{result['lat']},{result['lng']}"
+    return result["lat"], result["lng"]  # タプルで返す
 
 
 
-# Places API呼び出し・フィルタリング・結果整形(共用)
-def search_by_latlng(latlng):
+# ===== Nearby Search(New) =====
+# フィルタリング・結果整形(共用)
+def search_by_latlng(lat, lng):
     api_key = os.environ["GOOGLE_MAPS_API_KEY"]
 
-    # Places APIで駐車場を検索
-    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+    url = "https://places.googleapis.com/v1/places:searchNearby"
 
-    params = {
-        "location": latlng,
-        "keyword": "駐車場",
-        "language": "ja",
-        "key": api_key,
-        "rankby": "distance",
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": api_key,
+
+        # 必要なフィールドだけ指定するとコストを抑えられる（Essentials SKU）
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location"
     }
+
+    # ボディにJSON形式でパラメータを指定する
+    body = {
+        "includedTypes": ["parking"],  # 駐車場に絞る
+        "maxResultCount": 20,          # 多めに取得してフィルタリング後に10件にする
+        "rankPreference": "DISTANCE",  # 近い順
+        "locationRestriction": {
+            "circle": {
+                "center": {
+                    "latitude": lat,
+                    "longitude": lng
+                },
+                "radius" : 500.0      # 半径500m以内
+            }
+        },
+        "languageCode": "ja"
+    }
+
     try:
-        response = requests.get(url, params=params, timeout=5)
+        response = requests.post(url, headers=headers, json=body, timeout=5)
         response.raise_for_status()
         data = response.json()
-    except Exception as e:
-         print(f"[MAP ERROR] {e}")
-         return []
+    except requests.exceptions.RequestException as e:
+        print(f"[MAP ERROR] {e}")
+        return []
 
-    results = data.get("results", [])
-    results = results[:10]
+    results = data.get("places", [])
 
     parkings = []
     for place in results:
-        name = place.get("name", "")
+        name = place.get("displayName", {}).get("text", "")
         if any(word in name for word in EXCLUDE_WORDS):
                 continue
+        
         parkings.append({
-            "name": place.get("name", "名称不明"),
-            "address": place.get("vicinity", "住所不明"),
-            "place_id": place.get("place_id", ""),
-            "lat": place.get("geometry", {}).get("location", {}).get("lat"),
-            "lng": place.get("geometry", {}).get("location", {}).get("lng"),
+            "name": name or "名称不明",
+            "address": place.get("formattedAddress", "住所不明"),
+            "place_id": place.get("id", ""),
+            "lat": place.get("location", {}).get("latitude"),
+            "lng": place.get("location", {}).get("longitude"),
         })
+
+        # フィルタリング後に10件に絞る
+        if len(parkings) >= 10:
+            break
     
     return parkings
 
@@ -83,106 +106,120 @@ def search_by_latlng(latlng):
 
 # 駐車場を探す
 def search_parking(location):
-    latlng = get_location(location)
+    result = get_location(location)
 
     # 場所が見つからない場合
-    if not latlng:
+    if not result:
         return []
-    return search_by_latlng(latlng)
+    
+    lat, lng = result  # タプルから取り出す
+    return search_by_latlng(lat, lng)
 
 
 # 施設情報を取得する
 def get_facility_info(facility_name):
-    latlng = get_location(facility_name)
-    if not latlng:
+    result = get_location(facility_name)
+
+    if not result:
         return None
-    return search_facility(latlng, facility_name)
+    
+    lat, lng = result
+    return search_facility(lat, lng, facility_name)
 
 
 
-# Places APIで施設情報取得
-def search_facility(latlng, facility_name):
+# Places API (New) で施設情報取得
+def search_facility(lat, lng, facility_name):
     api_key = os.environ["GOOGLE_MAPS_API_KEY"]
+
+    # searchTextは施設名のテキストで検索できる
+    url = "https://places.googleapis.com/v1/places:searchText"
     
-    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
-    
-    params = {
-        "location": latlng,
-        "rankby": "distance",
-        "keyword": facility_name,
-        "language": "ja",
-        "key": api_key,
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": api_key,
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location"
+    }
+
+    body = {
+        "textQuery": facility_name,  # 施設名で検索
+        "pageSize": 1,
+        "languageCode": "ja",
+        "locationBias": {
+            "circle": {
+                "center": {
+                    "latitude": lat,
+                    "longitude": lng
+                },
+                "radius": 1000.0     # 施設検索は半径1km
+            }
+        }
     }
 
     try:
-        response = requests.get(url, params=params, timeout=5)
+        response = requests.post(url, headers=headers, json=body, timeout=5)
         response.raise_for_status()
         data = response.json()
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         print (f"[MAP ERROR] {e}")
         return None
     
-    results = data.get("results", [])
+    results = data.get("places", [])
     if not results:
         return None
     
     place = results[0]
+    place_id = place.get("id", "")
 
-    place_id = place.get("place_id", "")
 
     # Place Details APIで詳細情報を取得
     details = get_place_details(place_id)
-    if details:
-        website = details.get("website")
-        has_parking = details.get("has_parking")
-    else:
-        website = None
-        has_parking = "確認できません"
+    website = details.get("website") if details else None
 
     return {
-        "name": place.get("name", "名称不明"),
-        "address": place.get("vicinity", "住所不明"),
+        "name": place.get("displayName", {}).get("text", "名称不明"),
+        "address": place.get("formattedAddress", "住所不明"),
         "website": website,
-        "has_parking": has_parking,
-        "lat": place.get("geometry", {}).get("location", {}).get("lat"),
-        "lng": place.get("geometry", {}).get("location", {}).get("lng"),
+        "has_parking": "確認できません",
+        "lat": place.get("location", {}).get("latitude"),
+        "lng": place.get("location", {}).get("longitude"),
         "place_id": place_id,
     }
 
 
 
-#Place Details APIを呼んで、HPと駐車場の有無を返す
+#Place Details APIを呼んでHPを取得
 def get_place_details(place_id):
     api_key = os.environ["GOOGLE_MAPS_API_KEY"]
 
-    url = "https://maps.googleapis.com/maps/api/place/details/json"
+    # APIはURLにplace_idを直接埋め込む
+    url = f"https://places.googleapis.com/v1/places/{place_id}"
+
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": api_key,
+        "X-Goog-FieldMask": "websiteUri"
+    }
 
     params = {
-        "place_id": place_id,
-        "fields": "website,wheelchair_accessible_entrance",
-        "language": "ja",
-        "key": api_key,
+        "languageCode": "ja"
     }
 
     try:
-        response = requests.get(url, params=params, timeout=5)
+        response = requests.get(url, headers=headers, params=params, timeout=5)
         response.raise_for_status()
         data = response.json()
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         print(f"[MAP ERROR] {e}")
         return None
     
-    result = data.get("result", {})
-    
     return {
-        "website": result.get("website"),
-        "has_parking": "確認できません",
+        "website": data.get("websiteUri"),  # websiteからwebsiteUriへ
     }
 
 
 
 # GPS処理
+# 現在の緯度・経度から検索する
 def search_parking_by_latlng(lat, lng):
-    # 現在の緯度・経度もらう
-    latlng = f"{lat},{lng}"
-    return search_by_latlng(latlng)
+    return search_by_latlng(lat, lng)

@@ -5,9 +5,6 @@ let markers = [];
 let activeInfoWindow = null;
 
 
-// 施設検索関連
-let autocompleteService = null;
-
 let debounceTimer = null;    // タイマーのIDを保存する変数
 //「ひ」を入力 → タイマー開始（ID: 1）→ debounceTimer = 1
 //「が」を入力 → タイマー1をキャンセル → 新しいタイマー開始（ID: 2）→ debounceTimer = 2
@@ -128,7 +125,7 @@ function addMessage(text, sender) {
 // ===== 施設関連 =====
 // 施設情報
 function showFacility(facility) {
-    document.getElementById("chatBody").innerHTML = "";
+    document.querySelectorAll(".facility-card").forEach(el => el.remove());
     saveHistory(facility);
 
     const chatBody = document.getElementById("chatBody");
@@ -161,6 +158,10 @@ function showFacility(facility) {
         noHp.textContent = "公式HPは見つかりませんでした。";
         div.appendChild(noHp);
     }
+
+    // 今日どこに行きたいですか？ メッセージを消す
+    const welcome = document.querySelector(".welcome-message");
+    if (welcome) welcome.remove();
 
     chatBody.appendChild(div);
 
@@ -239,40 +240,43 @@ document.getElementById("facilityInput").addEventListener("input", function() {
         return;
     }
 
-    // autocompleteServiceが初期化されていない場合は何もしない
-    if(!autocompleteService) return;
-
     // 前のタイマーをキャンセルして、300ms後に実行する
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        autocompleteService.getPlacePredictions(
-            { input: input, language: "ja" },
-            function(predictions, status) {
-                const list = document.getElementById("autocompleteList");
-                list.innerHTML = "";
+    debounceTimer = setTimeout(async () => {
+        try {
+            const { suggestions } = await google.maps.places.AutocompleteSuggestion
+                .fetchAutocompleteSuggestions({ input: input, language: "ja" });
 
-                if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) return;
-                // 駐車場っぽい名前（「駐車場」「パーキング」「パーク」を含む）を候補から除外する
-                predictions = predictions.filter(p =>
-                    !p.description.includes("駐車場") &&
-                    !p.description.includes("パーキング") &&
-                    !p.description.includes("パーク")
-                );
+            const list = document.getElementById("autocompleteList");
+            list.innerHTML = "";
 
-                predictions.forEach(prediction => {
-                    const item = document.createElement("div");
-                    item.className = "autocomplete-item";
-                    item.textContent = prediction.description;
-                    item.addEventListener("click", () => {
-                        document.getElementById("facilityInput").value = prediction.description;
-                        list.innerHTML = "";
-                        // 選んだら施設検索する
-                        searchFacilityByName(prediction.description);
-                    });
-                    list.appendChild(item);
+            if (!suggestions || suggestions.length === 0) return;
+                
+            // 駐車場っぽい名前を候補から除外する
+            const filtered = suggestions.filter(s => {
+                const text = s.placePrediction.text.text;
+                return !text.includes("駐車場") &&
+                    !text.includes("パーキング") &&
+                    !text.includes("パーク");
+            });
+
+            filtered.forEach(suggestion => {
+                const text = suggestion.placePrediction.text.text;
+                const item = document.createElement("div");
+                item.className = "autocomplete-item";
+                item.textContent = text;
+                item.addEventListener("click", () => {
+                    document.getElementById("facilityInput").value = text;
+                    list.innerHTML = "";
+                    // 選んだら施設検索する
+                    searchFacilityByName(text);
                 });
-            }
-        );
+                list.appendChild(item);
+            });
+            
+        }catch(e){
+            console.error("[Autocomplete Error]", e);
+        }
     }, 300);
 });
 
@@ -342,24 +346,26 @@ function showMap(parkings){
     // 最初の駐車場を中心に地図を表示する
     map = new google.maps.Map(mapArea, {
         zoom: 15,
-        center: { lat: parkings[0].lat, lng: parkings[0].lng }
+        center: { lat: parkings[0].lat, lng: parkings[0].lng },
+        mapId: "DEMO_MAP_ID"
     });
+
+    // 赤い丸
+    const pinElement = document.createElement("div");
+    pinElement.style.cssText = `
+        width: 16px; height: 16px;
+        background: red; border: 2px solid darkred;
+        border-radius: 50%;
+    `;
 
     // 各駐車場にピンを立てる
     parkings.forEach((p, index)=> {
         if (p.lat && p.lng) {
-            const marker = new google.maps.Marker({
+            const marker = new google.maps.marker.AdvancedMarkerElement({
                 position: { lat: p.lat, lng: p.lng },
                 map: map,
                 title: p.name,
-                icon:{
-                    path: google.maps.SymbolPath.CIRCLE,
-                    fillColor: "red",
-                    fillOpacity: 1,
-                    strokeColor: "darkred",
-                    strokeWeight: 1,
-                    scale: 8
-                }
+                content: pinElement
             });
             markers.push(marker)
 
@@ -539,7 +545,6 @@ function showWelcome() {
 
 // 初期化
 function initApp() {
-    autocompleteService = new google.maps.places.AutocompleteService();
     showWelcome();
     renderHistory();
 }
