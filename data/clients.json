@@ -1,0 +1,12 @@
+[
+  {
+    "name": "株式会社テスト",
+    "address": "愛知県名古屋市中区栄1-1-1",
+    "parking": "あり",
+    "source_url": "https://example.com",
+    "confirmed_date": "2026-04-09",
+    "confirmed": true,
+    "lat": 35.1709,
+    "lng": 136.9065
+  }
+]

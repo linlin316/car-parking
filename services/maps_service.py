@@ -118,18 +118,12 @@ def search_parking(location):
 
 # 施設情報を取得する
 def get_facility_info(facility_name):
-    result = get_location(facility_name)
-
-    if not result:
-        return None
-    
-    lat, lng = result
-    return search_facility(lat, lng, facility_name)
+    return search_facility(facility_name)
 
 
 
 # Places API (New) で施設情報取得
-def search_facility(lat, lng, facility_name):
+def search_facility(facility_name):
     api_key = os.environ["GOOGLE_MAPS_API_KEY"]
 
     # searchTextは施設名のテキストで検索できる
@@ -145,15 +139,6 @@ def search_facility(lat, lng, facility_name):
         "textQuery": facility_name,  # 施設名で検索
         "pageSize": 1,
         "languageCode": "ja",
-        "locationBias": {
-            "circle": {
-                "center": {
-                    "latitude": lat,
-                    "longitude": lng
-                },
-                "radius": 1000.0     # 施設検索は半径1km
-            }
-        }
     }
 
     try:
