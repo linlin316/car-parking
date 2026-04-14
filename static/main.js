@@ -83,25 +83,6 @@ document.getElementById("chatInput").addEventListener("keydown", function(e) {
 });
 
 
-// リセットボタン
-document.getElementById("chatReset").addEventListener("click", function() {
-    fetch("/reset", {
-        method: "POST",
-    })
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById("chatBody").innerHTML = "";
-        showWelcome();
-        document.getElementById("mapArea").style.display = "none";  // 地図を隠す
-        markers.forEach(m => m.setMap(null));                       // 地図からピンを消す
-        markers = [];                                               // 配列を空にする
-        map = null;
-    })
-    .catch(() => {
-        addMessage("通信エラーが発生しました。", "ai");
-    });
-});
-
 
 // メッセージをチャット画面に追加する
 function addMessage(text, sender) {
@@ -115,8 +96,8 @@ function addMessage(text, sender) {
 
 
 
-// ===== 施設関連 =====
-// 施設情報
+// ===== 客先、施設関連 =====
+// 客先、施設情報
 function showFacility(facility) {
     document.querySelectorAll(".facility-card").forEach(el => el.remove());
 
@@ -193,21 +174,36 @@ function showFacility(facility) {
 }
 
 
-// 客先ボタンを表示する
+// 客先、施設情報ボタンを表示する
 function renderClients() {
     fetch("/clients")
     .then(res => res.json())
     .then(clients => {
         const area = document.getElementById("clientArea");
         area.innerHTML = "";
-        clients.forEach(client => {
+        clients.forEach((client, index) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "history-item";
+
             const btn = document.createElement("button");
             btn.textContent = client.name;
             btn.className = "history-btn";
             btn.addEventListener("click", () => {
                 showClient(client);
             });
-            area.appendChild(btn);
+
+            // 削除用×ボタン
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "x";
+            deleteBtn.className = "history-delete-btn";
+            deleteBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                deleteClient(index);
+            });
+
+            wrapper.appendChild(btn);
+            wrapper.appendChild(deleteBtn);
+            area.appendChild(wrapper);
         });
     })
     .catch(() => {
@@ -216,7 +212,7 @@ function renderClients() {
 }
 
 
-// 客先情報を表示する
+// 客先、施設情報を表示する
 function showClient(client) {
     const chatBody = document.getElementById("chatBody");
     chatBody.innerHTML = "";
@@ -295,6 +291,124 @@ function showClient(client) {
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
+
+// 客先、施設情報を追加ボタン
+document.getElementById("addClient").addEventListener("click", function() {
+    const chatBody = document.getElementById("chatBody");
+    chatBody.innerHTML = "";
+
+    const welcome = document.querySelector(".welcome-message");
+    if (welcome) welcome.remove();
+
+    const div = document.createElement("div");
+    div.className = "facility-card";
+
+    // タイトル
+    const title = document.createElement("strong");
+    title.textContent = "客先を追加";
+    div.appendChild(title);
+
+    // 入力フィールドを作る関数
+    function createInput(labelText, id, placeholder) {
+        const label = document.createElement("p");
+        label.textContent = labelText;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.id = id;
+        input.placeholder = placeholder;
+        input.style.width = "100%";
+        div.appendChild(label);
+        div.appendChild(input);
+    }
+
+    createInput("施設名", "input-name", "株式会社〇〇");
+    createInput("住所", "input-address", "愛知県名古屋市...");
+    createInput("情報元URL", "input-url", "https://...");
+
+    // 駐車場
+    const parkingLabel = document.createElement("p");
+    parkingLabel.textContent = "駐車場";
+    const select = document.createElement("select");
+    select.id = "input-parking";
+    ["あり", "なし", "不明"].forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt;
+        option.textContent = opt;
+        select.appendChild(option);
+    });
+    div.appendChild(parkingLabel);
+    div.appendChild(select);
+
+    // 保存ボタン
+    const saveBtn = document.createElement("button");
+    saveBtn.textContent = "保存";
+    saveBtn.className = "nearby-btn";
+    saveBtn.addEventListener("click", () => {
+        saveClient();
+    });
+    div.appendChild(saveBtn);
+
+    chatBody.appendChild(div);
+});
+
+
+// 客先、施設情報を保存する
+function saveClient() {
+    const name = document.getElementById("input-name").value.trim();
+    const address = document.getElementById("input-address").value.trim();
+    const url = document.getElementById("input-url").value.trim();
+    const parking = document.getElementById("input-parking").value;
+
+    // 名前と住所は必須
+    if (!name || !address) {
+        alert("施設名と住所は必須です。");
+        return;
+    }
+
+    fetch("/clients/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            name: name,
+            address: address,
+            source_url: url,
+            parking: parking,
+        }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            addMessage("客先を追加しました。", "ai");
+            renderClients();
+        } else {
+            addMessage("保存に失敗しました。", "ai");
+        }
+    })
+    .catch(() => {
+        addMessage("通信エラーが発生しました。", "ai");
+    });
+}
+
+
+// 客先、施設情報を削除する
+function deleteClient(index) {
+    fetch("/clients/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ index: index }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            renderClients();
+        } else {
+            addMessage("削除に失敗しました。", "ai");
+        }
+    })
+    .catch(() => {
+        addMessage("通信エラーが発生しました。", "ai");
+    });
+}
 
 
 // ===== 駐車場関連 =====
@@ -427,50 +541,6 @@ function showMap(parkings){
         }
     });
 }
-
-
-
-// ===== GPS処理 =====
-// 現在地周辺の駐車場を検索する
-document.getElementById("gpsSearch").addEventListener("click", function() {
-    navigator.geolocation.getCurrentPosition(
-        function(position) {
-        // GPSを取得成功した時の処理
-        const lat = position.coords.latitude;   // 緯度
-        const lng = position.coords.longitude;  // 経度
-
-        // サーバーに緯度・経度を送る
-        document.getElementById("chatBody").innerHTML = "";
-        document.getElementById("mapArea").style.display = "none";
-        markers.forEach(m => m.setMap(null));
-        markers = [];
-        map = null;
-        addMessage("現在地周辺の駐車場を検索中...", "ai")
-        fetch("/search_by_location", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ lat: lat, lng: lng }),
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.parkings && data.parkings.length > 0) {
-                setTimeout(() => {
-                    showParkings(data.parkings)
-                }, 1500);
-            }
-            else {
-                addMessage("現在地周辺の駐車場が見つかりません", "ai")
-            };
-        })
-        .catch(() => {
-            addMessage("通信エラーが発生しました。", "ai");
-        });
-    },
-        function(error){
-            addMessage("位置情報を取得できませんでした。", "ai")
-        }
-    );
-});
 
 
 
