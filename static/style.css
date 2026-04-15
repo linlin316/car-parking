@@ -93,13 +93,72 @@ body {
 /*  送信、リセット、音声入力、現在地ボタン */
 #chatSend,
 #chatReset,
-#micBtn,
-#gpsSearch {
+#micBtn {
   padding: 10px 12px;
   border-radius: 10px;
   border: none;
   cursor: pointer;
   font-weight: 700;
+}
+
+
+/*  客先を追加ボタン */
+#addClient {
+    padding: 6px 12px;
+    background-color: white;
+    color: #534AB7;
+    border: 1px solid #534AB7;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+
+/* リンクボタン（情報元・Googleマップ） */
+.link-btn {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 6px 12px;
+    background-color: white;
+    color: #534AB7;
+    border: 1px solid #534AB7;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: none;
+    margin-right: 6px;
+}
+
+
+/* 編集ボタン */
+.edit-btn {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background-color: white;
+    color: #534AB7;
+    border: 1px solid #534AB7;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+
+/* メモ、マップ見るボタン */
+.memo-btn,
+.link-btn {
+    vertical-align: middle;
+    margin-top: 6px;
+    padding: 6px 12px;
+    background-color: white;
+    color: #534AB7;
+    border: 1px solid #534AB7;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 10px;
 }
 
 

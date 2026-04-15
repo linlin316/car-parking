@@ -10,6 +10,8 @@ load_dotenv()
 from routes.chat   import bp as chat_bp
 from routes.search import bp as search_bp
 from routes.clients import bp as clients_bp
+from routes.memo import bp as memo_bp
+
 
 app = Flask(__name__)
 app.secret_key = os.environ["SECRET_KEY"]
@@ -19,6 +21,7 @@ app.secret_key = os.environ["SECRET_KEY"]
 app.register_blueprint(chat_bp)
 app.register_blueprint(search_bp)
 app.register_blueprint(clients_bp)
+app.register_blueprint(memo_bp)
 
 
 # ホームページ

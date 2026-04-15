@@ -189,7 +189,7 @@ function renderClients() {
             btn.textContent = client.name;
             btn.className = "history-btn";
             btn.addEventListener("click", () => {
-                showClient(client);
+                showClient(client, index);
             });
 
             // 削除用×ボタン
@@ -213,9 +213,22 @@ function renderClients() {
 
 
 // 客先、施設情報を表示する
-function showClient(client) {
+function showClient(client, index) {
+    // セッションに客先情報を保存
+    fetch("/clients/select", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(client),
+    });
+
     const chatBody = document.getElementById("chatBody");
     chatBody.innerHTML = "";
+
+    // 地図をリセット
+    document.getElementById("mapArea").style.display = "none";
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    map = null;
 
     const welcome = document.querySelector(".welcome-message");
     if (welcome) welcome.remove();
@@ -242,60 +255,170 @@ function showClient(client) {
     link.href = client.source_url;
     link.target = "_blank";
     link.textContent = "情報元を見る";
+    link.className = "link-btn";
 
     div.appendChild(name);
     div.appendChild(address);
     div.appendChild(parking);
     div.appendChild(confirmed);
     div.appendChild(link);
-    div.appendChild(document.createElement("br"));
 
     // Googleマップへのリンク
     const mapsLink = document.createElement("a");
     mapsLink.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(client.address);
     mapsLink.target = "_blank";
     mapsLink.textContent = "Googleマップで見る";
+    mapsLink.className = "link-btn";
+
     div.appendChild(mapsLink);
 
     chatBody.appendChild(div);
 
-    // 駐車場が「なし」または「不明」の場合は周辺検索ボタンを表示
-    if (client.parking !== "あり") {
-        const btn = document.createElement("button");
-        btn.textContent = "周辺の駐車場を探す";
-        btn.className = "nearby-btn";
-        btn.addEventListener("click", () => {
-            btn.disabled = true;
-            addMessage("周辺の駐車場を探します。", "ai");
-            fetch("/search_by_location", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ lat: client.lat, lng: client.lng }),
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.parkings && data.parkings.length > 0) {
-                    setTimeout(() => showParkings(data.parkings), 1500);
-                } else {
-                    addMessage("近くの駐車場が見つかりませんでした。", "ai");
-                }
-            })
-            .catch(() => {
-                addMessage("通信エラーが発生しました。", "ai");
-                btn.disabled = false;
-            });
+    // 編集ボタン
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "編集";
+    editBtn.className = "edit-btn";
+    editBtn.addEventListener("click", () => {
+        editClient(index, client);
+    });
+    div.appendChild(editBtn);
+
+
+    // 周辺駐車場検索ボタンを表示
+    const btn = document.createElement("button");
+    btn.textContent = "周辺の駐車場を探す";
+    btn.className = "nearby-btn";
+    btn.addEventListener("click", () => {
+        btn.disabled = true;
+        addMessage("周辺の駐車場を探します。", "ai");
+        fetch("/search_by_location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ lat: client.lat, lng: client.lng }),
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.parkings && data.parkings.length > 0) {
+                setTimeout(() => showParkings(data.parkings), 1500);
+            } else {
+                addMessage("近くの駐車場が見つかりませんでした。", "ai");
+            }
+        })
+        .catch(() => {
+            addMessage("通信エラーが発生しました。", "ai");
+            btn.disabled = false;
         });
-        div.appendChild(btn);
-    }
+    });
+    div.appendChild(btn);
 
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
 
-// 客先、施設情報を追加ボタン
+// 客先、施設情報編集ボタン
+function editClient(index, client){
+    const chatBody = document.getElementById("chatBody");
+    chatBody.innerHTML = "";
+
+    // 地図をリセット
+    document.getElementById("mapArea").style.display = "none";
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    map = null;
+
+    const welcome = document.querySelector(".welcome-message");
+    if (welcome) welcome.remove();
+
+    const div = document.createElement("div");
+    div.className = "facility-card";
+
+    // タイトル
+    const title = document.createElement("strong");
+    title.textContent = "客先を編集";
+    div.appendChild(title);
+
+    // 入力フィールドを作る関数
+    function createInput(labelText, id, placeholder) {
+        const label = document.createElement("p");
+        label.textContent = labelText;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.id = id;
+        input.value = placeholder;
+        input.style.width = "100%";
+        div.appendChild(label);
+        div.appendChild(input);
+    }
+
+    createInput("施設名", "input-name", client.name);
+    createInput("住所", "input-address", client.address);
+    createInput("情報元URL", "input-url", client.source_url);
+
+    // 駐車場
+    const parkingLabel = document.createElement("p");
+    parkingLabel.textContent = "駐車場";
+    const select = document.createElement("select");
+    select.id = "input-parking";
+    ["あり", "なし", "不明"].forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt;
+        option.textContent = opt;
+        select.appendChild(option);   
+    });
+
+    select.value = client.parking;
+    div.appendChild(parkingLabel);
+    div.appendChild(select);
+
+    // 保存ボタン
+    const editsaveBtn = document.createElement("button");
+    editsaveBtn.textContent = "保存";
+    editsaveBtn.className = "nearby-btn";
+    editsaveBtn.addEventListener("click", () => {
+        const name = document.getElementById("input-name").value.trim();
+        const address = document.getElementById("input-address").value.trim();
+        const url = document.getElementById("input-url").value.trim();
+        const parking = document.getElementById("input-parking").value;
+
+        fetch("/clients/edit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: name,
+                address: address,
+                source_url: url,
+                parking: parking,
+                index: index,
+            }),
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                addMessage("客先を編集しました。", "ai");
+                renderClients();
+            } else {
+                addMessage("編集に失敗しました。", "ai");
+            }
+        })
+        .catch(() => {
+            addMessage("通信エラーが発生しました。", "ai");
+        });
+    });
+    div.appendChild(editsaveBtn);
+    chatBody.appendChild(div);
+};
+
+
+// 客先、施設情報追加ボタン
 document.getElementById("addClient").addEventListener("click", function() {
     const chatBody = document.getElementById("chatBody");
     chatBody.innerHTML = "";
+
+    // 地図をリセット
+    document.getElementById("mapArea").style.display = "none";
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    map = null;
 
     const welcome = document.querySelector(".welcome-message");
     if (welcome) welcome.remove();
@@ -416,58 +539,148 @@ function deleteClient(index) {
 function showParkings(parkings){
     // 2回目の検索、古いカードが消えてから新しいカード表示する
     document.querySelectorAll(".parking-card").forEach(c => c.remove());
-
     const chatBody = document.getElementById("chatBody");
 
-    // 駐車場リストを1件ずつ処理する（pが1件分のデータ）
-    // XSSリスク対策のためcreateElementを使用
-    parkings.forEach((p, index) => {
-        const div = document.createElement("div");      // カード
-        const name = document.createElement("strong");  // 駐車場名
-        const address = document.createElement("p");    // 住所
+    // まずメモデータを取得してからカードを表示
+    fetch("/memo")
+    .then(res => res.json())
+    .then(memoData => {
+        parkings.forEach((p, index) => {
+            const div = document.createElement("div");
+            const name = document.createElement("strong");
+            const address = document.createElement("p");
 
-        name.textContent = p.name;
-        address.textContent = p.address;
+            name.textContent = p.name;
+            address.textContent = p.address;
 
-        div.className = "parking-card";
-        div.style.cursor = "pointer";
-        div.id = "card-" + index;
-        div.appendChild(name);
-        div.appendChild(address);
+            div.className = "parking-card";
+            div.style.cursor = "pointer";
+            div.id = "card-" + index;
+            div.appendChild(name);
+            div.appendChild(address);
 
-        // Googleマップへのリンク
-        const link = document.createElement("a");
-        link.href = "https://www.google.com/maps/place/?q=place_id:" + p.place_id;
-        link.target = "_blank";
-        link.textContent = "Googleマップで見る";
-        link.addEventListener("click", (e) =>{
+            // メモがあれば表示
+            const memo = memoData[p.place_id];
+            if (memo) {
+                const memoDiv = document.createElement("p");
+                memoDiv.style.color = "gray";
+                memoDiv.style.fontSize = "0.9em";
+                let memoText = "";
+                if (memo.fee) memoText += "💰 " + memo.fee + "　";
+                if (memo.capacity) memoText += "🚗 " + memo.capacity + "　";
+                if (memo.note) memoText += "📝 " + memo.note;
+                memoDiv.textContent = memoText;
+                div.appendChild(memoDiv);
+            }
+
+            // Googleマップへのリンク
+            const link = document.createElement("a");
+            link.href = "https://www.google.com/maps/place/?q=place_id:" + p.place_id;
+            link.target = "_blank";
+            link.textContent = "Googleマップで見る";
+            link.className = "link-btn";
+            link.addEventListener("click", (e) => {
+                e.stopPropagation();
+            });
+            div.appendChild(link);
+
+            // メモ編集ボタン
+            const memoBtn = document.createElement("button");
+            memoBtn.textContent = "メモを編集";
+            memoBtn.className = "memo-btn";
+            memoBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                showMemoForm(p.place_id, memoData[p.place_id] || {}, div, memoBtn, parkings);
+            });
+            div.appendChild(memoBtn);
+
+            // カードをクリックしたら地図をフォーカスする
+            div.addEventListener("click", () => {
+                if (map && p.lat && p.lng) {
+                    map.panTo({ lat: p.lat, lng: p.lng });
+                    map.setZoom(17);
+
+                    if (activeInfoWindow) activeInfoWindow.close();
+                    infoWindows[index].open(map, markers[index]);
+                    activeInfoWindow = infoWindows[index];
+
+                    document.querySelectorAll(".parking-card").forEach(c => c.style.backgroundColor = "");
+                    div.style.backgroundColor = '#63BB5B';
+                }
+            });
+
+            chatBody.appendChild(div);
+        });
+
+        chatBody.scrollTop = chatBody.scrollHeight;
+        showMap(parkings);
+    })
+    .catch(() => {
+        addMessage("メモデータの取得に失敗しました。", "ai");
+    });
+}
+
+
+// メモ編集フォームを表示する
+function showMemoForm(place_id, memo, card, memoBtn, parkings) {
+    // すでにフォームがあれば削除
+    const existing = card.querySelector(".memo-form");
+    if (existing) {
+        existing.remove();
+        return;
+    }
+
+    const form = document.createElement("div");
+    form.className = "memo-form";
+
+    function createField(labelText, value) {
+        const label = document.createElement("p");
+        const input = document.createElement("input");
+        label.textContent = labelText;
+
+        input.addEventListener("click", (e) => {
             e.stopPropagation();
         });
-        div.appendChild(link);
+        input.type = "text";
+        input.value = value || "";
+        input.style.width = "100%";
+        form.appendChild(label);
+        form.appendChild(input);
+        return input;
+    }
 
-        // カードをクリックしたら地図をフォーカスする
-        div.addEventListener("click", () => {
-            if (map && p.lat && p.lng){
-                map.panTo({ lat: p.lat, lng: p.lng});
-                map.setZoom(17);
+    const feeInput      = createField("料金", memo.fee);
+    const capacityInput = createField("台数", memo.capacity);
+    const noteInput     = createField("メモ", memo.note);
 
-                if (activeInfoWindow) activeInfoWindow.close();
-                infoWindows[index].open(map, markers[index]);
-                activeInfoWindow = infoWindows[index];
-
-                document.querySelectorAll(".parking-card").forEach(c => c.style.backgroundColor = "");
-                div.style.backgroundColor = '#63BB5B';
-            }      
+    const saveBtn = document.createElement("button");
+    saveBtn.textContent = "保存";
+    saveBtn.className = "nearby-btn";
+    saveBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        fetch("/memo/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                place_id: place_id,
+                fee:      feeInput.value,
+                capacity: capacityInput.value,
+                note:     noteInput.value,
+            }),
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                form.remove();
+                showParkings(parkings);
+            }
+        })
+        .catch(() => {
+            addMessage("通信エラーが発生しました。", "ai");
         });
-
-        chatBody.appendChild(div);
-    })
-
-    // 一番下までスクロールする
-    chatBody.scrollTop = chatBody.scrollHeight;
-
-    // 地図を表示する
-    showMap(parkings);
+    });
+    form.appendChild(saveBtn);
+    card.appendChild(form);
 }
 
 

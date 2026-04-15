@@ -30,16 +30,26 @@ def chat():
 # チャットの処理（AI呼び出し・履歴管理・検索）
 def handle_chat(user_text):
     history = session.get("history", [])
+    selected_client = session.get("selected_client")
 
     # ユーザーのメッセージを履歴に追加する
     history.append({"role": "user", "content": user_text})
 
-    result = text_to_ai(history)
+    result = text_to_ai(history, selected_client)
 
     # 場所があれば駐車場を検索する
     location = result.get("location")
     intent = result.get("intent")
+
+    if not location:
+        location = session.get("last_location")
+        if location:
+            result["ready_to_search"] = True
+            if not result.get("intent"):
+                result["intent"] = "parking"
+
     if location and result.get("ready_to_search") and intent:
+        session["last_location"] = location
         if intent == "facility":
             facility = get_facility_info(location)
             result["facility"] = facility

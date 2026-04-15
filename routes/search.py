@@ -1,4 +1,4 @@
-#駐車場検索エンドポイント（場所名・GPS座標）
+#駐車場検索エンドポイント
 
 from flask import Blueprint, request, jsonify
 from services.maps_service import search_parking, search_parking_by_latlng
@@ -26,7 +26,7 @@ def handle_search(location):
     return {"parkings": result, "location": location}
 
 
-# GPS座標（緯度・経度）から駐車場を検索するエンドポイント
+# 緯度・経度から駐車場を検索するエンドポイント
 @bp.route("/search_by_location", methods=["POST"])
 def search_by_location():
     data = request.get_json(silent=True) or {}

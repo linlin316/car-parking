@@ -1,0 +1,22 @@
+{
+  "ChIJdxjsPQBxA2ARv7yCcybcwyw": {
+    "fee": "200/20分,200/15分",
+    "capacity": "",
+    "note": "12時間最大1500"
+  },
+  "ChIJF3erWjRxA2ARlAdiFoHmxzw": {
+    "fee": "300/15分",
+    "capacity": "",
+    "note": "最大2000/2800￥"
+  },
+  "ChIJ8fz3TJJ3A2ARs2ga_2hUUkA": {
+    "fee": "200円/20分,100円/60分",
+    "capacity": "28",
+    "note": "最大1600/1800"
+  },
+  "ChIJb00rPlKhBGARlYjfn1IG2xQ": {
+    "fee": "60分/330￥ 最大800",
+    "capacity": "",
+    "note": "2026/04/15の記録"
+  }
+}

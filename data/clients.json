@@ -8,5 +8,25 @@
     "confirmed": true,
     "lat": 35.1709,
     "lng": 136.9065
+  },
+  {
+    "name": "株式会社テスト2",
+    "address": "愛知県名古屋市中区栄2-17-1",
+    "parking": "不明",
+    "source_url": "",
+    "confirmed_date": "2026-04-14",
+    "confirmed": false,
+    "lat": 35.1649582,
+    "lng": 136.8993285
+  },
+  {
+    "name": "トヨタ本社",
+    "address": "愛知県豊田市トヨタ町1番地",
+    "parking": "あり",
+    "source_url": "https://global.toyota/jp/company/profile/overview/",
+    "confirmed_date": "2026-04-15",
+    "confirmed": false,
+    "lat": 35.0540688,
+    "lng": 137.1542224
   }
 ]

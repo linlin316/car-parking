@@ -66,7 +66,7 @@ def search_by_latlng(lat, lng):
                     "latitude": lat,
                     "longitude": lng
                 },
-                "radius" : 500.0      # 半径500m以内
+                "radius" : 1000.0      # 半径500m以内
             }
         },
         "languageCode": "ja"
@@ -204,7 +204,6 @@ def get_place_details(place_id):
 
 
 
-# GPS処理
 # 現在の緯度・経度から検索する
 def search_parking_by_latlng(lat, lng):
     return search_by_latlng(lat, lng)
