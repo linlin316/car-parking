@@ -9,7 +9,7 @@ function showWelcome() {
     const chatBody = document.getElementById("chatBody");
     const div = document.createElement("div");
     div.className = "welcome-message";
-    div.textContent = "今日どこに行きたいですか？";
+    div.textContent = "客先を選ぶか、現在地から駐車場を探してください。";
     chatBody.appendChild(div);
 }
  

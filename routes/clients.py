@@ -100,6 +100,7 @@ def edit_client():
     client_id = data.get("id")
     name      = data.get("name", "").strip()
     address   = data.get("address", "").strip()
+    confirmed = data.get("confirmed")
  
     if client_id is None:
         return jsonify({"success": False}), 400
@@ -119,7 +120,6 @@ def edit_client():
         lat = target["lat"]
         lng = target["lng"]
  
-    # id・confirmed・confirmed_date はそのまま引き継ぐ
     target.update({
         "name":       name,
         "address":    address,
@@ -127,6 +127,8 @@ def edit_client():
         "source_url": data.get("source_url", ""),
         "lat":        lat,
         "lng":        lng,
+        "confirmed":  confirmed,
+        "confirmed_date": str(date.today()) if confirmed else target.get("confirmed_date"),
     })
  
     save_clients(clients)

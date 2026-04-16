@@ -27,9 +27,20 @@
     "address": "愛知県豊田市トヨタ町1番地",
     "parking": "あり",
     "source_url": "https://global.toyota/jp/company/profile/overview/",
-    "confirmed_date": "2026-04-15",
-    "confirmed": false,
+    "confirmed_date": "2026-04-16",
+    "confirmed": true,
     "lat": 35.0540688,
     "lng": 137.1542224
+  },
+  {
+    "id": 4,
+    "name": "名古屋城",
+    "address": "愛知県名古屋市中区本丸1番1号",
+    "parking": "あり",
+    "source_url": "",
+    "confirmed_date": "2026-04-16",
+    "confirmed": true,
+    "lat": 35.1848766,
+    "lng": 136.8997608
   }
 ]

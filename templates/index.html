@@ -1,19 +1,26 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="chat-container">
-  <div class="app-header">🚗駐車場検索</div>
-  <div id="clientArea" class="client-area"></div>
+  <div class="app-header">🚗 駐車場検索</div>
+ 
+  <!-- 客先ボタン一覧 -->
+  <div id="clientArea" class="history-area"></div>
+ 
+  <!-- 検索結果・カード表示エリア -->
   <div id="chatBody"></div>
+ 
+  <!-- 地図表示エリア -->
   <div id="mapArea" style="display:none;"></div>
+ 
+  <!-- 下部操作エリア -->
   <div class="input-area">
-    <div class="button-row">
-      <button id="addClient">客先を追加</button>
-    </div>
     <div class="input-row">
-      <input type="text" id="chatInput" placeholder="AIに話しかけて駐車場を探す...">
-      <button id="chatSend">➤</button>
-      <button id="micBtn">🎤</button>
+      <!-- 現在地から探すボタン -->
+      <button id="gpsBtn" class="nearby-btn" style="flex:1;">📍 現在地から探す</button>
+      <!-- 客先追加ボタン -->
+      <button id="addClient" class="nearby-btn" style="flex:1;">＋ 客先を追加</button>
     </div>
   </div>
+ 
 </div>
 {% endblock %}

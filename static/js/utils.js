@@ -5,16 +5,20 @@
 /**
  * fetch のラッパー関数
  * 全APIリクエストをここで一元管理する
+ * apiFetchは、サーバーにデータを送って、結果を受け取る関数
  * @param {string} url  - リクエスト先のURL
  * @param {Object} body - 送信するJSONデータ
  * @returns {Promise<Object>} レスポンスのJSONデータ
  */
 async function apiFetch(url, body) {
+    // bodyをJSON文字列に変換してPOSTリクエストを送り、レスポンスを待つ（await）
     const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
     });
+    // res.ok はHTTPステータスが200〜299のときだけ true になります
+    // throw new Error はエラーを意図的に発生させて、処理を止める命令(throw がないとエラーでも気にせず続け)
     if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
     return res.json();
 }
@@ -101,4 +105,19 @@ function createParkingSelect(container, currentValue = "") {
     container.appendChild(label);
     container.appendChild(select);
     return select;
+}
+
+
+/**
+ * チャットエリアにメッセージを追加する
+ * @param {string} text   - メッセージ内容
+ * @param {string} sender - "user" または "ai"
+ */
+function addMessage(text, sender) {
+    const chatBody = document.getElementById("chatBody");
+    const div = document.createElement("div");
+    div.className = sender === "user" ? "bubble-user" : "bubble-ai";
+    div.textContent = text;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
 }

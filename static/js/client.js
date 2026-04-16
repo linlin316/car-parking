@@ -191,10 +191,22 @@ function showClientForm(mode, client = {}) {
     div.appendChild(title);
  
     // 入力フィールド（編集時は既存値、追加時はplaceholder）
-    createInputField(div, "施設名",    "input-name",    isEdit ? client.name       : "株式会社〇〇",      isEdit);
-    createInputField(div, "住所",      "input-address", isEdit ? client.address    : "愛知県名古屋市...", isEdit);
-    createInputField(div, "情報元URL", "input-url",     isEdit ? client.source_url : "https://...",       isEdit);
+    createInputField(div, "施設名または会社名", "input-name",    isEdit ? client.name       : "〇〇ビル、株式会社〇〇",      isEdit);
+    createInputField(div, "住所",              "input-address", isEdit ? client.address    : "愛知県名古屋市...", isEdit);
+    createInputField(div, "情報元URL(任意)",   "input-url",     isEdit ? client.source_url : "https://...",       isEdit);
     createParkingSelect(div, isEdit ? client.parking : "");
+
+    // 確認済みチェックボックス（編集時のみ表示）
+    if (isEdit) {
+    const label = document.createElement("p");
+    label.textContent = "確認済み";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = "input-confirmed";
+    checkbox.checked = client.confirmed || false;
+    div.appendChild(label);
+    div.appendChild(checkbox);
+    }
  
     // 保存ボタン
     const saveBtn = document.createElement("button");
@@ -250,6 +262,7 @@ function updateClient(clientId) {
         address:    document.getElementById("input-address").value.trim(),
         source_url: document.getElementById("input-url").value.trim(),
         parking:    document.getElementById("input-parking").value,
+        confirmed:  document.getElementById("input-confirmed").checked,
     })
     .then(data => {
         if (data.success) {
