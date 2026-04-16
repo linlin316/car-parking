@@ -6,7 +6,17 @@
   <title>駐車場を探す</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=places,marker&language=ja&loading=async" defer></script>
-  <script src="{{ url_for('static', filename='main.js') }}" defer></script>
+ 
+  <!-- JS は依存関係の順番で読み込む -->
+  <!-- utils.js が一番最初（他の全ファイルから使う共通処理） -->
+  <script src="{{ url_for('static', filename='js/utils.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/map.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/parking.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/client.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/voice.js') }}" defer></script>
+  <!-- main.js が一番最後（全ファイルが読み込まれてから初期化する） -->
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 </head>
 <body>
     {% block content %}{% endblock %}

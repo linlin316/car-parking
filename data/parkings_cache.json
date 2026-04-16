@@ -1,0 +1,147 @@
+{
+  "35.05_137.15": {
+    "cached_at": "2026-04-16",
+    "parkings": [
+      {
+        "name": "トヨタ自動車本社工場待合せ技10",
+        "address": "日本、〒471-0826 愛知県豊田市トヨタ町４７１−０８２６",
+        "place_id": "ChIJZ-5slPGhBGARNbhhN_kNyEw",
+        "lat": 35.0532288,
+        "lng": 137.1537482
+      },
+      {
+        "name": "トヨタ自動車本社第２駐車場",
+        "address": "日本、〒471-0826 愛知県豊田市トヨタ町",
+        "place_id": "ChIJGRw6-n6hBGARJjQ9I-4WDi8",
+        "lat": 35.0533952,
+        "lng": 137.1525794
+      },
+      {
+        "name": "タイムズ三河豊田駅南",
+        "address": "日本、〒471-0826 愛知県豊田市トヨタ町６４７",
+        "place_id": "ChIJI7Xy0gihBGARk_c9Jn4lLxg",
+        "lat": 35.053859599999996,
+        "lng": 137.15136099999998
+      },
+      {
+        "name": "ニッシンパーク三河豊田駅南駐車場",
+        "address": "日本、〒471-0826 愛知県豊田市トヨタ町",
+        "place_id": "ChIJuci0PtyhBGARl5SMbM72N2E",
+        "lat": 35.0526798,
+        "lng": 137.1517198
+      },
+      {
+        "name": "トヨタ本社 南駐車場",
+        "address": "日本、〒470-1201 愛知県豊田市豊栄町１丁目",
+        "place_id": "ChIJoaE0cL-hBGARawskHMJOa9o",
+        "lat": 35.0521304,
+        "lng": 137.15646619999998
+      },
+      {
+        "name": "名城パーキング三河豊田駅",
+        "address": "日本、〒473-0901 愛知県豊田市御幸本町１丁目",
+        "place_id": "ChIJTZKKAQChBGARBZGUwPTimVk",
+        "lat": 35.0543495,
+        "lng": 137.1509442
+      },
+      {
+        "name": "三井のリパーク 三河豊田駅南 駐車場",
+        "address": "日本、〒473-0901 愛知県豊田市御幸本町１丁目２０４",
+        "place_id": "ChIJQQZAmE6hBGARQHZXyDRB9G0",
+        "lat": 35.053211399999995,
+        "lng": 137.151095
+      },
+      {
+        "name": "ニッシンパーク三河豊田駅南第2駐車場(Ｂ)トヨタ町",
+        "address": "日本、〒471-0826 愛知県豊田市トヨタ町４７１ 0826",
+        "place_id": "ChIJrYhxGgChBGARrYowDCo7xoc",
+        "lat": 35.0519512,
+        "lng": 137.15199429999998
+      },
+      {
+        "name": "タイムズエニタイムフィットネス豊田御幸本町店",
+        "address": "日本、〒473-0901 愛知県豊田市御幸本町３丁目８６",
+        "place_id": "ChIJb00rPlKhBGARlYjfn1IG2xQ",
+        "lat": 35.052918999999996,
+        "lng": 137.151072
+      },
+      {
+        "name": "パレス第３豊田｜パークダイレクト",
+        "address": "日本、〒471-0833 愛知県豊田市山之手４丁目１５５",
+        "place_id": "ChIJH37lIQChBGARX2g1WUpBLyg",
+        "lat": 35.0547566,
+        "lng": 137.1508264
+      },
+      {
+        "name": "名鉄協商パーキング 三河豊田駅南",
+        "address": "日本、〒473-0901 愛知県豊田市御幸本町３丁目80−２",
+        "place_id": "ChIJJ-cnnI-hBGARXQ7kLj6Tabo",
+        "lat": 35.0524549,
+        "lng": 137.1510906
+      },
+      {
+        "name": "三井のリパーク 三河豊田駅前 駐車場",
+        "address": "日本、〒473-0901 愛知県豊田市御幸本町１丁目２２１",
+        "place_id": "ChIJ5aprmM2hBGARdO8KVY8spcQ",
+        "lat": 35.0542474,
+        "lng": 137.15041449999998
+      },
+      {
+        "name": "FK三河豊田駅前駐車場｜パークダイレクト",
+        "address": "日本、〒471-0833 愛知県豊田市山之手４丁目１６１",
+        "place_id": "ChIJ93aAfgChBGARcFGC4VEuoSU",
+        "lat": 35.0548314,
+        "lng": 137.15045410000002
+      },
+      {
+        "name": "豊栄 第4駐車場",
+        "address": "日本、〒471-0826 愛知県豊田市トヨタ町",
+        "place_id": "ChIJR4x_9tChBGARGz4C27Limh4",
+        "lat": 35.051186799999996,
+        "lng": 137.1525049
+      },
+      {
+        "name": "Dパーキング三河豊田駅前第2",
+        "address": "日本、〒471-0833 愛知県豊田市山之手４丁目１６１",
+        "place_id": "ChIJx0zPiF2hBGARVT1cac_swLw",
+        "lat": 35.0549086,
+        "lng": 137.15042169999998
+      },
+      {
+        "name": "タイムズ三河豊田駅",
+        "address": "日本、〒471-0833 愛知県豊田市トヨタ町４丁目６４３",
+        "place_id": "ChIJ01Nm_sWhBGARomyJBYX9lCs",
+        "lat": 35.055755999999995,
+        "lng": 137.150739
+      },
+      {
+        "name": "ニッシンパーク トヨタ町駐車場",
+        "address": "日本、〒471-0826 愛知県豊田市トヨタ町",
+        "place_id": "ChIJbWETZuehBGARaOoft9bOBF8",
+        "lat": 35.051107099999996,
+        "lng": 137.15224640000002
+      },
+      {
+        "name": "ニッシンパーク三河豊田駅駐車場",
+        "address": "日本、〒471-0826 愛知県豊田市トヨタ町",
+        "place_id": "ChIJi7Sj7SWhBGARXXWzyKzdnks",
+        "lat": 35.056529999999995,
+        "lng": 137.1510705
+      },
+      {
+        "name": "三井のリパーク 三河豊田駅前第３ 駐車場",
+        "address": "日本、〒471-0833 愛知県豊田市山之手４丁目１４０",
+        "place_id": "ChIJ-Q66nhihBGARL-R2CvEsr9U",
+        "lat": 35.056308300000005,
+        "lng": 137.15040879999998
+      },
+      {
+        "name": "名鉄協商パーキング 三河豊田駅前",
+        "address": "日本、〒471-0833 愛知県豊田市山之手４丁目１４３",
+        "place_id": "ChIJ1VylbnChBGARUNMpIQu1S9w",
+        "lat": 35.056531199999995,
+        "lng": 137.1506149
+      }
+    ]
+  }
+}
