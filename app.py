@@ -15,7 +15,6 @@ from routes.memo import bp as memo_bp
 
 
 app = Flask(__name__)
-app.secret_key = os.environ["SECRET_KEY"]
 
 
 # Blueprint登録
