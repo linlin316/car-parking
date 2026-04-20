@@ -231,6 +231,8 @@ body {
     gap: 6px;
     padding: 8px;
     border-bottom: 1px solid #ccc;
+    max-height: 36px;
+    overflow-y: auto;
 }
 
 
@@ -243,6 +245,17 @@ body {
     border-radius: 20px;
     padding: 4px 8px 4px 10px;
     gap: 4px;
+}
+
+
+/* 客先検索ボックス */
+#clientSearch {
+    width: 100%;
+    padding: 6px 12px;
+    border: 1px solid #534AB7;
+    border-radius: 20px;
+    font-size: 13px;
+    box-sizing: border-box;
 }
 
 

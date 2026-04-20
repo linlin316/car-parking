@@ -1,10 +1,11 @@
 // client.js - 客先・施設管理
-// 客先の一覧表示・追加・編集・削除
+// 客先の一覧表示・追加・編集・削除・検索絞り込み
 
 
  
 /**
  * ヘッダーの客先ボタン一覧を再描画する
+ * 検索ボックスの入力内容で絞り込む
  * 追加・削除・編集の後に必ず呼ぶ
  */
 function renderClients() {
@@ -14,7 +15,10 @@ function renderClients() {
             const area = document.getElementById("clientArea");
             area.innerHTML = "";
  
-            clients.forEach(client => {
+            const query = document.getElementById("clientSearch").value.toLowerCase();
+            const filtered = clients.filter(c => c.name.toLowerCase().includes(query));
+
+            filtered.forEach(client => {
                 // ボタン＋削除×のセット
                 const wrapper = document.createElement("div");
                 wrapper.className = "history-item";
@@ -237,6 +241,7 @@ function deleteClient(clientId) {
  
  
 // 客先追加ボタンのクリックイベント
+document.getElementById("clientSearch").addEventListener("input", renderClients);
 document.getElementById("addClient").addEventListener("click", function () {
     showClientForm("add");
 });
