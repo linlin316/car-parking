@@ -1,32 +1,14 @@
 #駐車場検索エンドポイント
 
 from flask import Blueprint, request, jsonify
-from services.maps_service import search_parking, search_parking_by_latlng
+from services.maps_service import search_parking_by_latlng
 
 
 bp = Blueprint("search", __name__)
 
 
-# 検索エンドポイント
-@bp.route("/search", methods=["POST"])
-def search():
-    # メッセージ中の場所をもらう
-    data = request.get_json(silent=True) or {}
-    location = (data.get("location") or "").strip()
-    
-    result = handle_search(location)
-
-    return jsonify(result), 200
-
-
-# 検索処理
-def handle_search(location):
-    # 駐車場を検索する
-    result = search_parking(location)
-    return {"parkings": result, "location": location}
-
-
 # 緯度・経度から駐車場を検索するエンドポイント
+# 客先ボタン・GPSボタンから呼ばれる
 @bp.route("/search_by_location", methods=["POST"])
 def search_by_location():
     data = request.get_json(silent=True) or {}

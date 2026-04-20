@@ -54,19 +54,6 @@ body {
 
 
 /* ===== メッセージ（吹き出し） ===== */
-/* ユーザー側の吹き出し */
-.bubble-user {
-    background-color: #534AB7;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 12px 12px 4px 12px;
-    margin: 4px 0;
-    max-width: 70%;
-    align-self: flex-end;
-    margin-left: auto;
-}
-
-
 /* AI側の吹き出し */
 .bubble-ai {
     background-color: #f0f0f0;
@@ -90,18 +77,6 @@ body {
 
 
 /* ===== ボタン ===== */
-/*  送信、リセット、音声入力、現在地ボタン */
-#chatSend,
-#chatReset,
-#micBtn {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-
 /*  客先を追加ボタン */
 #addClient {
     padding: 6px 12px;
@@ -143,7 +118,6 @@ body {
     font-size: 13px;
     font-weight: bold;
     width: 100%;
-    margin-bottom: 8px;
 }
 
 
@@ -204,14 +178,6 @@ body {
 }
 
 
-/* ボタン行 */
-.button-row {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-}
-
-
 
 /* ===== 入力エリア ===== */
 /* 入力行 */
@@ -232,16 +198,6 @@ body {
 }
 
 
-/* ユーザー入力欄 */
-#chatInput {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    font-size: 14px;
-}
-
-
 
 /* ===== 施設関連 ===== */
 /* 施設情報カード */
@@ -251,25 +207,6 @@ body {
     padding: 12px;
     margin: 4px 0;
     font-size: 14px;
-}
-
-
-/* 施設名入力エリア */
-.facility-search-area {
-    position: relative;
-    padding: 8px;
-    border-bottom: 1px solid #ccc;
-}
-
-
-/* 施設名入力欄 */
-#facilityInput {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    font-size: 14px;
-    box-sizing: border-box;
 }
 
 
@@ -317,37 +254,4 @@ body {
     margin: 8px;
     border-radius: 12px;
     overflow: hidden;
-}
-
-
-
-/* ===== Autocomplete ===== */
-/* 候補リスト */
-.autocomplete-list {
-    position: absolute;
-    top: 100%;
-    left: 8px;
-    right: 8px;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    z-index: 100;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-
-/* 候補リストの各項目 */
-.autocomplete-item {
-    padding: 10px 12px;
-    font-size: 13px;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-}
-
-.autocomplete-item:hover {
-    background-color: #eef4fb;
-}
-
-.autocomplete-item:last-child {
-    border-bottom: none;
 }

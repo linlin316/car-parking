@@ -185,34 +185,6 @@ def search_by_latlng(lat, lng):
     return parkings
 
 
-# 駐車場検索（キャッシュ対応）
-def search_parking(location):
-    """
-    場所名から周辺駐車場を検索する
-    キャッシュがあればAPIを呼ばずに返す
-    @param location - 場所名の文字列
-    @returns 駐車場データのリスト
-    """
-    # キャッシュを確認する
-    cached = get_cached_parkings(location)
-    if cached is not None:
-        return cached
- 
-    # キャッシュがなければAPIを呼ぶ
-    result = get_location(location)
-    if not result:
-        return []
- 
-    lat, lng = result
-    parkings = search_by_latlng(lat, lng)
- 
-    # 結果をキャッシュに保存する
-    if parkings:
-        set_cached_parkings(location, parkings)
- 
-    return parkings
-
-
 def search_parking_by_latlng(lat, lng):
     """
     緯度・経度から周辺駐車場を検索する（客先ボタンからの検索用）
@@ -237,11 +209,6 @@ def search_parking_by_latlng(lat, lng):
 
 
 # ===== 施設検索 =====
-
-def get_facility_info(facility_name):
-    """施設情報を取得する"""
-    return search_facility(facility_name)
-
 
 def search_facility(facility_name):
     """

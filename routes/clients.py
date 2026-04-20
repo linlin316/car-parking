@@ -1,6 +1,6 @@
 # 客先情報エンドポイント
 
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request
 from services.maps_service import get_location
 from datetime import date
 import json
@@ -153,12 +153,4 @@ def delete_client():
     clients.remove(target)
     save_clients(clients)
  
-    return jsonify({"success": True})
- 
- 
-# セッションに客先を保存（AI へのコンテキスト提供用）
-@bp.route("/clients/select", methods=["POST"])
-def select_client():
-    data = request.get_json(silent=True) or {}
-    session["selected_client"] = data
     return jsonify({"success": True})

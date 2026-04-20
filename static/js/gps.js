@@ -11,7 +11,7 @@ function searchByCurrentLocation() {
  
     // ブラウザがGeolocationに対応しているか確認
     if (!navigator.geolocation) {
-        showMessage("このブラウザは現在地取得に対応していません。", "error");
+        addMessage("このブラウザは現在地取得に対応していません。", "ai");
         return;
     }
  
@@ -30,7 +30,7 @@ function searchByCurrentLocation() {
             resetChatBody();
             resetMap();
  
-            showMessage("現在地の周辺駐車場を検索しています...", "ai");
+            addMessage("現在地の周辺駐車場を検索しています...", "ai");
  
             searchAndShowParkingsByLatLng(lat, lng, btn);
         },
@@ -45,7 +45,7 @@ function searchByCurrentLocation() {
                 2: "現在地を取得できませんでした。もう一度お試しください。",
                 3: "現在地の取得がタイムアウトしました。もう一度お試しください。",
             };
-            showMessage(messages[error.code] || "現在地を取得できませんでした。", "error");
+            addMessage(messages[error.code] || "現在地を取得できませんでした。", "error");
         },
         // オプション
         {
@@ -55,28 +55,7 @@ function searchByCurrentLocation() {
         }
     );
 }
- 
- 
-/**
- * チャットエリアにメッセージを表示する
- * @param {string} text  - メッセージ内容
- * @param {string} type  - "ai"（通常）または "error"（エラー）
- */
-function showMessage(text, type = "ai") {
-    const chatBody = document.getElementById("chatBody");
-    const div = document.createElement("div");
-    div.className = type === "error" ? "bubble-ai" : "bubble-ai";
- 
-    // エラーの場合は赤文字にする
-    if (type === "error") {
-        div.style.color = "#cc0000";
-    }
- 
-    div.textContent = text;
-    chatBody.appendChild(div);
-    chatBody.scrollTop = chatBody.scrollHeight;
-}
- 
+
  
 // 現在地ボタンのクリックイベント
 document.getElementById("gpsBtn").addEventListener("click", function () {

@@ -1,61 +1,7 @@
 // client.js - 客先・施設管理
-// 客先の一覧表示・追加・編集・削除・施設情報カード
+// 客先の一覧表示・追加・編集・削除
 
- 
-/**
- * 施設情報カードをチャットエリアに表示する
- * 「近くの駐車場を探す」ボタンも含む
- * @param {Object} facility - 施設情報オブジェクト
- */
-function showFacility(facility) {
-    resetChatBody();
- 
-    const chatBody = document.getElementById("chatBody");
-    const div = document.createElement("div");
-    div.className = "facility-card";
- 
-    // 施設名・住所・駐車場案内
-    const name = document.createElement("strong");
-    name.textContent = facility.name;
- 
-    const address = document.createElement("p");
-    address.textContent = facility.address;
- 
-    const parking = document.createElement("p");
-    parking.textContent = "駐車場：公式HPでご確認ください";
- 
-    div.appendChild(name);
-    div.appendChild(address);
-    div.appendChild(parking);
- 
-    // 公式HPがあればリンクを表示
-    if (facility.website) {
-        const link = document.createElement("a");
-        link.href = facility.website;
-        link.target = "_blank";
-        link.textContent = "公式HPを見る";
-        div.appendChild(link);
-    } else {
-        const noHp = document.createElement("p");
-        noHp.textContent = "公式HPは見つかりませんでした。";
-        div.appendChild(noHp);
-    }
- 
-    // 近くの駐車場を探すボタン
-    const nearbyBtn = document.createElement("button");
-    nearbyBtn.textContent = "近くの駐車場を探す";
-    nearbyBtn.className = "nearby-btn";
-    nearbyBtn.addEventListener("click", () => {
-        nearbyBtn.disabled = true;
-        addMessage("近くの駐車場を探します。", "ai");
-        searchAndShowParkingsByLatLng(facility.lat, facility.lng, nearbyBtn);
-    });
-    div.appendChild(nearbyBtn);
- 
-    chatBody.appendChild(div);
-    chatBody.scrollTop = chatBody.scrollHeight;
-}
- 
+
  
 /**
  * ヘッダーの客先ボタン一覧を再描画する
@@ -100,9 +46,6 @@ function renderClients() {
  * @param {Object} client - 客先データ
  */
 function showClient(client) {
-    // セッションに選択中の客先を保存（AIへのコンテキスト提供用）
-    apiFetch("/clients/select", client).catch(() => {});
- 
     resetChatBody();
     resetMap();
  
